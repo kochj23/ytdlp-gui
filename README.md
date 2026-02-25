@@ -61,6 +61,182 @@ xcodebuild -project ytdlp-gui.xcodeproj -scheme ytdlp-gui -configuration Release
 5. **Anti-Detection** — Enable stealth mode to rotate user agents, add random delays, and auto-retry on rate limits
 6. **Library** — Browse download history with search, favorites, and one-click re-download
 
+## Supported Sites
+
+ytdlp-gui works with **any site supported by yt-dlp** — over **1,800 sites** and counting. Below are the most popular ones, organized by category.
+
+> For the complete list, see [yt-dlp supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md).
+
+### Video Platforms
+| Site | Notes |
+|------|-------|
+| **YouTube** | Videos, playlists, channels, shorts, live streams, music |
+| **Vimeo** | Videos, albums, channels, on-demand, user profiles |
+| **Dailymotion** | Videos, playlists, user uploads, search |
+| **Twitch** | Live streams, VODs, clips, collections |
+| **Rumble** | Videos, channels, embeds |
+| **Bilibili** | Videos, bangumi, audio, playlists, live, search |
+| **Niconico** | Videos, live, playlists, series, user uploads |
+| **PeerTube** | Any PeerTube instance, playlists |
+| **Odysee / LBRY** | Videos, channels, playlists |
+| **Rutube** | Videos, channels, playlists, movies |
+| **BitChute** | Videos, channels |
+| **Kick** | Live streams, VODs, clips |
+
+### Social Media
+| Site | Notes |
+|------|-------|
+| **Twitter / X** | Videos, broadcasts, Spaces, cards, Amplify |
+| **Instagram** | Posts, reels, stories, IGTV |
+| **TikTok** | Videos, user profiles, live, collections |
+| **Facebook** | Videos, reels, ads, page videos |
+| **Reddit** | Video posts |
+| **Bluesky** | Video posts |
+| **Pinterest** | Pins, collections |
+| **Tumblr** | Video posts |
+| **VK (VKontakte)** | Videos, wall posts, user videos, VK Play |
+| **Weibo** | Videos, user profiles |
+| **Snapchat** | Spotlight videos |
+
+### Music & Audio
+| Site | Notes |
+|------|-------|
+| **SoundCloud** | Tracks, playlists, sets, user profiles, search |
+| **Bandcamp** | Tracks, albums, user pages, weekly features |
+| **Mixcloud** | Mixes, playlists, user profiles |
+| **Audiomack** | Tracks, albums |
+| **JioSaavn** | Songs, albums, playlists, artist pages, shows |
+| **Spotify** | Podcast episodes (limited) |
+| **Apple Podcasts** | Episodes |
+| **QQ Music** | Songs, albums, MVs, playlists, top lists |
+| **NetEase Music** | Songs, albums, MVs, playlists, DJ radio |
+
+### Streaming & TV
+| Site | Notes |
+|------|-------|
+| **BBC iPlayer** | Videos, episodes, playlists |
+| **ITV** | On-demand content |
+| **Channel 4 (All 4)** | On-demand content |
+| **ARD Mediathek** | Videos, collections, audio |
+| **ZDF** | Videos, channels |
+| **Arte** | Videos, playlists, categories, embeds |
+| **France TV** | Videos, France Info |
+| **SVT Play** | Videos, series |
+| **NRK** | TV, radio, podcasts, school content |
+| **DR TV** | Videos, live, series, seasons |
+| **RTE** | Irish national TV and radio |
+| **CBC Gem** | Videos, live, playlists |
+| **SBS (Australia)** | On-demand content |
+| **Crunchyroll** | Anime episodes, series |
+| **Disney** | Select content |
+| **Paramount+** | Via CBS News embeds |
+| **Discovery+** | Videos, shows (multiple regions) |
+| **Hotstar** | Videos, series |
+| **Viu** | Videos, playlists (Asian content) |
+| **WeTV** | Episodes, series |
+| **iQIYI** | Videos, albums |
+
+### News & Media
+| Site | Notes |
+|------|-------|
+| **CNN** | Video clips |
+| **ABC News** | Videos, articles |
+| **CBS News** | Videos, embeds, live |
+| **NBC News** | Videos, stations |
+| **Fox News** | Videos, articles |
+| **BBC News** | Articles, video clips |
+| **The Washington Post** | Videos, articles |
+| **The New York Times** | Videos, articles, cooking |
+| **The Guardian** | Podcasts, podcast playlists |
+| **C-SPAN** | Videos, congressional hearings |
+| **Al Jazeera** | Videos |
+| **France 24** | Via francetv |
+| **DW (Deutsche Welle)** | Articles |
+| **NHK** | VOD, radio, school content |
+| **Sky News** | Videos, stories, Sky News AU |
+
+### Education & Learning
+| Site | Notes |
+|------|-------|
+| **Khan Academy** | Lessons, units |
+| **Udemy** | Lectures, courses |
+| **Coursera** | Via generic extractor |
+| **LinkedIn Learning** | Lessons, courses |
+| **MIT OpenCourseWare** | Lectures |
+| **TED** | Talks, playlists, series, embeds |
+| **Pluralsight** | Lessons, courses |
+| **Frontend Masters** | Lessons, courses |
+| **egghead.io** | Lessons, courses |
+| **Nebula** | Videos, channels, subscriptions |
+| **CuriosityStream** | Videos, collections, series |
+| **BrainPOP** | Educational videos (multiple languages) |
+| **Laracasts** | Videos, series |
+
+### Live Streaming
+| Site | Notes |
+|------|-------|
+| **Twitch** | Live streams, VODs, clips, collections |
+| **Kick** | Live streams, VODs, clips |
+| **YouTube Live** | Live streams, premieres |
+| **TwitCasting** | Live streams, user archives |
+| **AfreecaTV (SOOP)** | Live streams, catch stories, user profiles |
+| **Chaturbate** | Live streams |
+| **Livestream** | Live and archived content |
+| **Trovo** | Live streams, VODs, channel clips |
+| **LivestreamFails** | Clips |
+
+### Podcasts & Radio
+| Site | Notes |
+|------|-------|
+| **Apple Podcasts** | Episodes |
+| **Spreaker** | Episodes, shows |
+| **Podchaser** | Episodes |
+| **Simplecast** | Episodes, podcasts |
+| **Megaphone** | Episodes |
+| **iHeartRadio** | Podcasts, episodes |
+| **TuneIn** | Stations, podcasts |
+| **Radio France** | Live, podcasts, profiles |
+| **BBC Radio** | Via BBC extractor |
+| **NPR** | Audio segments |
+
+### Sports
+| Site | Notes |
+|------|-------|
+| **ESPN** | Videos, articles, cricket |
+| **MLB** | Videos, articles, MLB TV |
+| **NFL** | Videos, articles, NFL+ episodes and replays |
+| **NHL** | Videos |
+| **UFC** | UFC Arabia, UFC TV |
+| **PGA Tour** | Videos |
+| **Bundesliga** | Videos |
+| **Motorsport** | Videos |
+| **Red Bull TV** | Videos, embeds |
+| **Wimbledon** | Videos |
+| **MLS Soccer** | Videos |
+
+### Other Notable Sites
+| Site | Notes |
+|------|-------|
+| **Archive.org** | Videos, audio, collections |
+| **Flickr** | Videos |
+| **Imgur** | Videos, albums, galleries |
+| **Dropbox** | Shared video files |
+| **Google Drive** | Shared video files, folders |
+| **Loom** | Screen recordings |
+| **Streamable** | Video clips |
+| **Patreon** | Posts, campaigns |
+| **Gab** | Videos, Gab TV |
+| **Substack** | Embedded video/audio |
+| **Wistia** | Business video hosting, channels, playlists |
+| **Brightcove** | Enterprise video platform |
+| **Vevo** | Music videos, playlists |
+| **GameSpot** | Gaming videos |
+| **IGN** | Gaming/entertainment videos |
+| **Steam** | Game trailers, community content, broadcasts |
+| **GitHub** | Via generic extractor |
+
+> **Note:** Some sites require authentication (cookies or login). Use the Anti-Detection panel to import browser cookies. Some extractors may be temporarily broken — check yt-dlp's issue tracker for current status. Keeping yt-dlp updated ensures the best compatibility.
+
 ## Anti-Detection
 
 The stealth system helps avoid rate limiting and detection:
