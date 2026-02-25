@@ -1,0 +1,39 @@
+# Xcode
+build/
+*.xcworkspace
+xcuserdata/
+*.xcscmblueprint
+DerivedData/
+*.moved-aside
+*.ipa
+
+# macOS
+.DS_Store
+*.swp
+*.lock
+.AppleDouble
+.LSOverride
+
+# Dependencies
+Pods/
+Carthage/
+
+# Binaries
+*.app
+*.dmg
+
+# Secrets
+*.p12
+*.cer
+*.mobileprovision
+secrets.json
+credentials.json
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# XcodeGen
+# Keep project.yml, ignore generated project
+# ytdlp-gui.xcodeproj/  (keep this for users who don't have xcodegen)
