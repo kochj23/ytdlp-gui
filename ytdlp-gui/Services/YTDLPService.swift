@@ -249,7 +249,8 @@ class YTDLPService: ObservableObject {
                                 || combinedOutput.contains("This video is not available") {
                         continuation.resume(throwing: YTDLPError.forbidden)
                     } else {
-                        let errorMsg = errorOutput.isEmpty ? fullOutput : errorOutput
+                        let rawError = errorOutput.isEmpty ? fullOutput : errorOutput
+                        let errorMsg = self?.extractBestErrorMessage(rawError) ?? rawError
                         continuation.resume(throwing: YTDLPError.downloadFailed(errorMsg))
                     }
                 }
@@ -297,6 +298,38 @@ class YTDLPService: ObservableObject {
                 continuation.resume(throwing: YTDLPError.executionFailed(error))
             }
         }
+    }
+
+    // MARK: - Error Message Extraction
+
+    /// Extracts the most useful error line(s) from yt-dlp's verbose output
+    private func extractBestErrorMessage(_ raw: String) -> String {
+        let lines = raw.components(separatedBy: "\n").filter { !$0.isEmpty }
+
+        // Look for lines starting with "ERROR:" — these are the actionable ones
+        let errorLines = lines.filter { $0.contains("ERROR:") }
+        if !errorLines.isEmpty {
+            // Return up to 3 ERROR lines, cleaned up
+            let cleaned = errorLines.prefix(3).map {
+                $0.replacingOccurrences(of: "ERROR: ", with: "")
+                  .trimmingCharacters(in: .whitespaces)
+            }
+            return cleaned.joined(separator: "\n")
+        }
+
+        // Look for lines with common error indicators
+        let indicators = ["unable to", "not found", "failed", "invalid", "unsupported", "unavailable", "denied", "timeout", "timed out"]
+        let relevant = lines.filter { line in
+            let lower = line.lowercased()
+            return indicators.contains { lower.contains($0) }
+        }
+        if !relevant.isEmpty {
+            return relevant.prefix(3).joined(separator: "\n")
+        }
+
+        // Fall back to last few non-empty lines (most recent output)
+        let lastLines = lines.suffix(5).joined(separator: "\n")
+        return lastLines.isEmpty ? "Download failed with exit code \(process?.terminationStatus ?? -1)" : lastLines
     }
 
     // MARK: - Progress Parsing

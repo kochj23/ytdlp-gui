@@ -297,9 +297,25 @@ struct StealthView: View {
                             }
                             .pickerStyle(.segmented)
 
-                            Text("Requires curl_cffi Python package")
-                                .font(.system(size: 11, design: .rounded))
-                                .foregroundColor(ModernColors.textTertiary)
+                            if BinaryManager.shared.impersonateAvailable {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(ModernColors.accentGreen)
+                                        .font(.system(size: 11))
+                                    Text("curl_cffi available — impersonation active")
+                                        .font(.system(size: 11, design: .rounded))
+                                        .foregroundColor(ModernColors.accentGreen)
+                                }
+                            } else {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundColor(ModernColors.orange)
+                                        .font(.system(size: 11))
+                                    Text("Requires curl_cffi: pip install curl_cffi (skipped if missing)")
+                                        .font(.system(size: 11, design: .rounded))
+                                        .foregroundColor(ModernColors.orange)
+                                }
+                            }
                         }
                         .glassCard()
 

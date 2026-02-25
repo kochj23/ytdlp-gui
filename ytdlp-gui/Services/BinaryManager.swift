@@ -32,54 +32,69 @@ class BinaryManager: ObservableObject {
     // MARK: - Binary Paths
 
     var ytdlpPath: String {
-        // 1. Check app support for updated binary
-        let appSupportPath = appSupportBinDir.appendingPathComponent("yt-dlp").path
-        if fileManager.isExecutableFile(atPath: appSupportPath) {
-            return appSupportPath
-        }
-
-        // 2. Check bundled binary
-        if let bundledPath = Bundle.main.path(forResource: "yt-dlp", ofType: nil, inDirectory: "Binaries") {
-            if fileManager.isExecutableFile(atPath: bundledPath) {
-                return bundledPath
-            }
-        }
-
-        // 3. Check Homebrew (Apple Silicon)
-        if fileManager.isExecutableFile(atPath: "/opt/homebrew/bin/yt-dlp") {
-            return "/opt/homebrew/bin/yt-dlp"
-        }
-
-        // 4. Check Homebrew (Intel)
-        if fileManager.isExecutableFile(atPath: "/usr/local/bin/yt-dlp") {
-            return "/usr/local/bin/yt-dlp"
-        }
-
-        // 5. Try PATH
-        return "/opt/homebrew/bin/yt-dlp"
+        findBinary("yt-dlp")
     }
 
     var ffmpegPath: String {
-        let appSupportPath = appSupportBinDir.appendingPathComponent("ffmpeg").path
+        findBinary("ffmpeg")
+    }
+
+    /// Searches for a binary in order: app support, bundle, Homebrew (ARM/Intel), PATH via `which`
+    private func findBinary(_ name: String) -> String {
+        // 1. App support (updated binary)
+        let appSupportPath = appSupportBinDir.appendingPathComponent(name).path
         if fileManager.isExecutableFile(atPath: appSupportPath) {
             return appSupportPath
         }
 
-        if let bundledPath = Bundle.main.path(forResource: "ffmpeg", ofType: nil, inDirectory: "Binaries") {
-            if fileManager.isExecutableFile(atPath: bundledPath) {
-                return bundledPath
+        // 2. Bundled binary
+        if let bundledPath = Bundle.main.path(forResource: name, ofType: nil, inDirectory: "Binaries"),
+           fileManager.isExecutableFile(atPath: bundledPath) {
+            return bundledPath
+        }
+
+        // 3. Homebrew (Apple Silicon)
+        let homebrewARM = "/opt/homebrew/bin/\(name)"
+        if fileManager.isExecutableFile(atPath: homebrewARM) {
+            return homebrewARM
+        }
+
+        // 4. Homebrew (Intel)
+        let homebrewIntel = "/usr/local/bin/\(name)"
+        if fileManager.isExecutableFile(atPath: homebrewIntel) {
+            return homebrewIntel
+        }
+
+        // 5. Resolve from PATH using `which`
+        if let resolved = resolveFromPATH(name) {
+            return resolved
+        }
+
+        // 6. Return best-guess path (caller should check isExecutable)
+        logger.warning("\(name) not found in any known location")
+        return homebrewARM
+    }
+
+    /// Uses /usr/bin/which to find a binary on the user's PATH
+    private func resolveFromPATH(_ name: String) -> String? {
+        let process = Process()
+        let pipe = Pipe()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
+        process.arguments = [name]
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        do {
+            try process.run()
+            process.waitUntilExit()
+            if process.terminationStatus == 0 {
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                if let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                   fileManager.isExecutableFile(atPath: path) {
+                    return path
+                }
             }
-        }
-
-        if fileManager.isExecutableFile(atPath: "/opt/homebrew/bin/ffmpeg") {
-            return "/opt/homebrew/bin/ffmpeg"
-        }
-
-        if fileManager.isExecutableFile(atPath: "/usr/local/bin/ffmpeg") {
-            return "/usr/local/bin/ffmpeg"
-        }
-
-        return "/opt/homebrew/bin/ffmpeg"
+        } catch {}
+        return nil
     }
 
     var ffprobePath: String {
@@ -140,6 +155,36 @@ class BinaryManager: ObservableObject {
 
     var isFFmpegAvailable: Bool {
         fileManager.isExecutableFile(atPath: ffmpegPath)
+    }
+
+    /// Check if --impersonate is available (requires curl_cffi)
+    @Published var impersonateAvailable: Bool = false
+
+    func checkImpersonateSupport() async {
+        let result = await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
+            let process = Process()
+            let pipe = Pipe()
+            process.executableURL = URL(fileURLWithPath: ytdlpPath)
+            process.arguments = ["--list-impersonate-targets"]
+            process.standardOutput = pipe
+            process.standardError = pipe
+            do {
+                try process.run()
+                process.waitUntilExit()
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                let output = String(data: data, encoding: .utf8) ?? ""
+                // If any target shows without "(unavailable)", impersonate works
+                let hasAvailable = output.contains("Chrome") && !output.contains("(unavailable)")
+                    || output.contains("Safari") && !output.split(separator: "\n").filter { $0.contains("Safari") }.allSatisfy { $0.contains("unavailable") }
+                continuation.resume(returning: hasAvailable)
+            } catch {
+                continuation.resume(returning: false)
+            }
+        }
+        impersonateAvailable = result
+        if !result {
+            logger.info("TLS impersonation unavailable (curl_cffi not installed)")
+        }
     }
 
     // MARK: - Update from GitHub

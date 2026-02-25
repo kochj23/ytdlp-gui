@@ -103,9 +103,10 @@ struct ytdlp_guiApp: App {
         // Ensure bundled binaries are available
         binaryManager.ensureBinariesExist()
 
-        // Detect binary versions
+        // Detect binary versions and capabilities
         Task {
             await binaryManager.detectVersions()
+            await binaryManager.checkImpersonateSupport()
         }
 
         // Check for updates on launch

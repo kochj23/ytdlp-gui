@@ -85,7 +85,8 @@ class DownloadManager: ObservableObject {
             if stealth.rotateUserAgents {
                 options.userAgent = StealthManager.shared.nextUserAgent()
             }
-            if let target = stealth.impersonateTarget, !target.isEmpty {
+            if let target = stealth.impersonateTarget, !target.isEmpty,
+               BinaryManager.shared.impersonateAvailable {
                 options.impersonate = target
             }
             if let browserCookie = stealth.cookieSource.ytdlpValue {

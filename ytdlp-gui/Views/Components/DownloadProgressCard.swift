@@ -88,7 +88,9 @@ struct DownloadProgressCard: View {
                 Text(error)
                     .font(.system(size: 12, design: .rounded))
                     .foregroundColor(ModernColors.statusCritical)
-                    .lineLimit(2)
+                    .lineLimit(5)
+                    .textSelection(.enabled)
+                    .help(error)
             }
 
             // Controls
