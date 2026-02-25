@@ -128,10 +128,8 @@ ytdlp-gui works with **any site supported by yt-dlp** — over **1,800 sites** a
 | **CBC Gem** | Videos, live, playlists |
 | **SBS (Australia)** | On-demand content |
 | **Crunchyroll** | Anime episodes, series |
-| **Disney** | Select content |
 | **Paramount+** | Via CBS News embeds |
 | **Discovery+** | Videos, shows (multiple regions) |
-| **Hotstar** | Videos, series |
 | **Viu** | Videos, playlists (Asian content) |
 | **WeTV** | Episodes, series |
 | **iQIYI** | Videos, albums |
@@ -140,7 +138,6 @@ ytdlp-gui works with **any site supported by yt-dlp** — over **1,800 sites** a
 | Site | Notes |
 |------|-------|
 | **CNN** | Video clips |
-| **ABC News** | Videos, articles |
 | **CBS News** | Videos, embeds, live |
 | **NBC News** | Videos, stations |
 | **Fox News** | Videos, articles |
@@ -200,7 +197,6 @@ ytdlp-gui works with **any site supported by yt-dlp** — over **1,800 sites** a
 ### Sports
 | Site | Notes |
 |------|-------|
-| **ESPN** | Videos, articles, cricket |
 | **MLB** | Videos, articles, MLB TV |
 | **NFL** | Videos, articles, NFL+ episodes and replays |
 | **NHL** | Videos |
@@ -247,6 +243,10 @@ ytdlp-gui works with **any site supported by yt-dlp** — over **1,800 sites** a
 | **Boosty** | Creator content |
 | **Imgur** | Videos, albums, galleries |
 | **Flickr** | Videos |
+
+### Adult (NSFW)
+
+PornHub, XHamster, XVideos, etc. — yt-dlp supports dozens of adult sites. See the [full list](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) for details.
 
 > **Note:** Some sites require authentication (cookies or login). Use the Anti-Detection panel to import browser cookies. Some extractors may be temporarily broken — check yt-dlp's issue tracker for current status. Keeping yt-dlp updated ensures the best compatibility.
 
