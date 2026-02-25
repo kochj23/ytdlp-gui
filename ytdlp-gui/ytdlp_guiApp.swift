@@ -15,6 +15,10 @@ struct ytdlp_guiApp: App {
     @StateObject private var dataStore = DataStore.shared
     @StateObject private var downloadManager = DownloadManager.shared
     @StateObject private var binaryManager = BinaryManager.shared
+    @StateObject private var clipboardMonitor = ClipboardMonitor.shared
+    @StateObject private var scheduleManager = ScheduleManager.shared
+    @StateObject private var subscriptionManager = SubscriptionManager.shared
+    @StateObject private var speedLimiter = SpeedLimiter.shared
 
     init() {
         // Request notification permissions
@@ -29,6 +33,9 @@ struct ytdlp_guiApp: App {
                 .preferredColorScheme(.dark)
                 .onAppear {
                     setupApp()
+                }
+                .onOpenURL { url in
+                    handleURL(url)
                 }
         }
         .windowStyle(.hiddenTitleBar)
@@ -66,6 +73,17 @@ struct ytdlp_guiApp: App {
                     }
                 }
                 .keyboardShortcut("u", modifiers: [.command, .shift])
+
+                Divider()
+
+                Button("Toggle Clipboard Monitor") {
+                    if clipboardMonitor.isMonitoring {
+                        clipboardMonitor.stopMonitoring()
+                    } else {
+                        clipboardMonitor.startMonitoring()
+                    }
+                }
+                .keyboardShortcut("m", modifiers: [.command, .shift])
             }
         }
 
@@ -78,6 +96,9 @@ struct ytdlp_guiApp: App {
     private func setupApp() {
         // Load persisted data
         dataStore.loadData()
+
+        // Load speed limiter settings
+        speedLimiter.load()
 
         // Ensure bundled binaries are available
         binaryManager.ensureBinariesExist()
@@ -92,6 +113,20 @@ struct ytdlp_guiApp: App {
             Task {
                 try? await binaryManager.updateYTDLP()
             }
+        }
+
+        // Start scheduler and subscription monitor
+        scheduleManager.startScheduler()
+        subscriptionManager.startMonitoring()
+    }
+
+    // MARK: - URL Scheme Handler (ytdlp-gui://download?url=...)
+
+    private func handleURL(_ url: URL) {
+        guard url.scheme == "ytdlp-gui" else { return }
+        if url.host == "download", let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+           let urlParam = components.queryItems?.first(where: { $0.name == "url" })?.value {
+            downloadManager.enqueue(url: urlParam)
         }
     }
 }

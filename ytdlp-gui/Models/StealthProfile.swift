@@ -29,6 +29,16 @@ struct StealthProfile: Codable {
     var maxRetries: Int = 5
     var backoffBase: Double = 2.0
     var backoffMax: Double = 300.0
+
+    // Enhanced anti-detection (YouTube 403 evasion)
+    var usePlayerClientRotation: Bool = true
+    var playerClients: [String] = ["web", "android", "ios", "mweb"]
+    var setReferer: Bool = true
+    var sendConsentCookie: Bool = true
+    var sleepBetweenRequests: Double = 1.0
+    var poToken: String?
+    var visitorData: String?
+    var useOAuth: Bool = false
 }
 
 enum CookieSource: String, Codable, CaseIterable, Identifiable {

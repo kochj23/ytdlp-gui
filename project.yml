@@ -8,8 +8,8 @@ options:
 
 settings:
   base:
-    MARKETING_VERSION: "1.0.0"
-    CURRENT_PROJECT_VERSION: "1"
+    MARKETING_VERSION: "1.1.0"
+    CURRENT_PROJECT_VERSION: "2"
     SWIFT_VERSION: "5.9"
     MACOSX_DEPLOYMENT_TARGET: "13.0"
     CODE_SIGN_IDENTITY: "-"
@@ -32,11 +32,18 @@ targets:
       - path: ytdlp-gui/Resources/Binaries
         optional: true
         buildPhase: resources
+    info:
+      path: ytdlp-gui/Info.plist
+      properties:
+        LSApplicationCategoryType: public.app-category.utilities
+        CFBundleURLTypes:
+          - CFBundleURLName: com.jordankoch.ytdlp-gui
+            CFBundleURLSchemes:
+              - ytdlp-gui
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.jordankoch.ytdlp-gui
         PRODUCT_NAME: "ytdlp-gui"
-        GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
         CODE_SIGN_ENTITLEMENTS: "ytdlp-gui/ytdlp-gui.entitlements"
     entitlements:

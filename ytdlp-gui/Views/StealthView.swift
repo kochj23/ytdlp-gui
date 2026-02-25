@@ -134,6 +134,69 @@ struct StealthView: View {
 
                     // Right column
                     VStack(spacing: 20) {
+                        // YouTube 403 Evasion
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Image(systemName: "exclamationmark.shield")
+                                    .foregroundColor(ModernColors.red)
+                                Text("YouTube Anti-403")
+                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                    .foregroundColor(ModernColors.textPrimary)
+                            }
+
+                            Toggle("Rotate player clients (web/android/ios)", isOn: $dataStore.stealthProfile.usePlayerClientRotation)
+                                .onChange(of: dataStore.stealthProfile.usePlayerClientRotation) { _ in
+                                    dataStore.saveStealthProfile()
+                                }
+
+                            Toggle("Set YouTube referer header", isOn: $dataStore.stealthProfile.setReferer)
+                                .onChange(of: dataStore.stealthProfile.setReferer) { _ in
+                                    dataStore.saveStealthProfile()
+                                }
+
+                            Toggle("Send CONSENT cookie", isOn: $dataStore.stealthProfile.sendConsentCookie)
+                                .onChange(of: dataStore.stealthProfile.sendConsentCookie) { _ in
+                                    dataStore.saveStealthProfile()
+                                }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Sleep between requests: \(String(format: "%.1f", dataStore.stealthProfile.sleepBetweenRequests))s")
+                                    .font(.system(size: 12, design: .rounded))
+                                    .foregroundColor(ModernColors.textSecondary)
+                                Slider(value: $dataStore.stealthProfile.sleepBetweenRequests, in: 0...5, step: 0.5)
+                                    .onChange(of: dataStore.stealthProfile.sleepBetweenRequests) { _ in
+                                        dataStore.saveStealthProfile()
+                                    }
+                            }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("PO Token (optional)")
+                                    .font(.system(size: 12, design: .rounded))
+                                    .foregroundColor(ModernColors.textSecondary)
+                                TextField("Paste PO token...", text: Binding(
+                                    get: { dataStore.stealthProfile.poToken ?? "" },
+                                    set: { dataStore.stealthProfile.poToken = $0.isEmpty ? nil : $0; dataStore.saveStealthProfile() }
+                                ))
+                                .formTextField()
+                            }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Visitor Data (optional)")
+                                    .font(.system(size: 12, design: .rounded))
+                                    .foregroundColor(ModernColors.textSecondary)
+                                TextField("Paste visitor data...", text: Binding(
+                                    get: { dataStore.stealthProfile.visitorData ?? "" },
+                                    set: { dataStore.stealthProfile.visitorData = $0.isEmpty ? nil : $0; dataStore.saveStealthProfile() }
+                                ))
+                                .formTextField()
+                            }
+
+                            Text("Tip: Cookie import from your browser is the most effective 403 fix. Also keep yt-dlp updated.")
+                                .font(.system(size: 11, design: .rounded))
+                                .foregroundColor(ModernColors.yellow)
+                        }
+                        .glassCard()
+
                         // TLS Impersonation
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {

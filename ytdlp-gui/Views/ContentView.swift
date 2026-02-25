@@ -8,6 +8,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 // MARK: - Sidebar Navigation
 
@@ -15,6 +16,7 @@ enum SidebarSection: String, CaseIterable {
     case main = "Main"
     case downloads = "Downloads"
     case options = "Options"
+    case automation = "Automation"
     case tools = "Tools"
 }
 
@@ -22,6 +24,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
     // Main
     case dashboard = "Dashboard"
     case newDownload = "New Download"
+    case batchImport = "Batch Import"
 
     // Downloads
     case queue = "Queue"
@@ -31,7 +34,15 @@ enum SidebarItem: String, CaseIterable, Identifiable {
     case presets = "Presets"
     case formatSelector = "Format Selector"
     case outputTemplate = "Output Template"
+    case speedLimiter = "Speed Limiter"
     case allOptions = "All Options"
+
+    // Automation
+    case clipboard = "Clipboard Monitor"
+    case scheduler = "Scheduler"
+    case subscriptions = "Subscriptions"
+    case postActions = "Post-Download"
+    case sponsorBlock = "SponsorBlock"
 
     // Tools
     case playlist = "Playlists"
@@ -44,9 +55,10 @@ enum SidebarItem: String, CaseIterable, Identifiable {
 
     var section: SidebarSection {
         switch self {
-        case .dashboard, .newDownload: return .main
+        case .dashboard, .newDownload, .batchImport: return .main
         case .queue, .library: return .downloads
-        case .presets, .formatSelector, .outputTemplate, .allOptions: return .options
+        case .presets, .formatSelector, .outputTemplate, .speedLimiter, .allOptions: return .options
+        case .clipboard, .scheduler, .subscriptions, .postActions, .sponsorBlock: return .automation
         case .playlist, .stealth, .binaries, .log, .settings: return .tools
         }
     }
@@ -55,12 +67,19 @@ enum SidebarItem: String, CaseIterable, Identifiable {
         switch self {
         case .dashboard: return "square.grid.2x2"
         case .newDownload: return "arrow.down.circle"
+        case .batchImport: return "doc.text"
         case .queue: return "list.bullet"
         case .library: return "books.vertical"
         case .presets: return "star"
         case .formatSelector: return "film"
-        case .outputTemplate: return "doc.text"
+        case .outputTemplate: return "doc.richtext"
+        case .speedLimiter: return "speedometer"
         case .allOptions: return "slider.horizontal.3"
+        case .clipboard: return "doc.on.clipboard"
+        case .scheduler: return "clock.badge.checkmark"
+        case .subscriptions: return "antenna.radiowaves.left.and.right"
+        case .postActions: return "bolt.circle"
+        case .sponsorBlock: return "scissors"
         case .playlist: return "list.number"
         case .stealth: return "eye.slash"
         case .binaries: return "cpu"
@@ -73,12 +92,19 @@ enum SidebarItem: String, CaseIterable, Identifiable {
         switch self {
         case .dashboard: return ModernColors.cyan
         case .newDownload: return ModernColors.accentGreen
+        case .batchImport: return ModernColors.yellow
         case .queue: return ModernColors.accentBlue
         case .library: return ModernColors.purple
         case .presets: return ModernColors.orange
         case .formatSelector: return ModernColors.pink
         case .outputTemplate: return ModernColors.yellow
+        case .speedLimiter: return ModernColors.teal
         case .allOptions: return ModernColors.teal
+        case .clipboard: return ModernColors.accentGreen
+        case .scheduler: return ModernColors.purple
+        case .subscriptions: return ModernColors.cyan
+        case .postActions: return ModernColors.orange
+        case .sponsorBlock: return ModernColors.red
         case .playlist: return ModernColors.blue
         case .stealth: return ModernColors.accentOrange
         case .binaries: return ModernColors.accentGreen
@@ -94,6 +120,7 @@ struct ContentView: View {
     @EnvironmentObject var dataStore: DataStore
     @EnvironmentObject var downloadManager: DownloadManager
     @State private var selectedItem: SidebarItem = .dashboard
+    @State private var isDragOver = false
 
     var body: some View {
         ZStack {
@@ -113,6 +140,25 @@ struct ContentView: View {
                 mainContent
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+
+            // Drag overlay
+            if isDragOver {
+                ZStack {
+                    Color.black.opacity(0.5)
+                    VStack(spacing: 16) {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(ModernColors.cyan)
+                        Text("Drop URLs to Download")
+                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                    }
+                }
+                .allowsHitTesting(false)
+            }
+        }
+        .onDrop(of: [.url, .text, .plainText], isTargeted: $isDragOver) { providers in
+            handleDrop(providers)
         }
     }
 
@@ -235,6 +281,8 @@ struct ContentView: View {
             DashboardView()
         case .newDownload:
             NewDownloadView()
+        case .batchImport:
+            BatchImportView()
         case .queue:
             QueueView()
         case .library:
@@ -245,8 +293,20 @@ struct ContentView: View {
             FormatSelectorView()
         case .outputTemplate:
             OutputTemplateBuilderView()
+        case .speedLimiter:
+            SpeedLimitView()
         case .allOptions:
             OptionsView()
+        case .clipboard:
+            ClipboardMonitorView()
+        case .scheduler:
+            ScheduleView()
+        case .subscriptions:
+            SubscriptionView()
+        case .postActions:
+            PostDownloadView()
+        case .sponsorBlock:
+            SponsorBlockEditorView()
         case .playlist:
             PlaylistView()
         case .stealth:
@@ -258,5 +318,39 @@ struct ContentView: View {
         case .settings:
             SettingsView()
         }
+    }
+
+    // MARK: - Drag and Drop
+
+    private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
+        var handled = false
+
+        for provider in providers {
+            if provider.hasItemConformingToTypeIdentifier("public.url") {
+                provider.loadItem(forTypeIdentifier: "public.url") { item, _ in
+                    if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
+                        let urlString = url.absoluteString
+                        Task { @MainActor in
+                            DownloadManager.shared.enqueue(url: urlString)
+                        }
+                    }
+                }
+                handled = true
+            } else if provider.hasItemConformingToTypeIdentifier("public.plain-text") {
+                provider.loadItem(forTypeIdentifier: "public.plain-text") { item, _ in
+                    if let text = item as? String {
+                        let urls = text.components(separatedBy: .newlines)
+                            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                            .filter { $0.hasPrefix("http://") || $0.hasPrefix("https://") }
+                        Task { @MainActor in
+                            DownloadManager.shared.enqueueMultiple(urls: urls)
+                        }
+                    }
+                }
+                handled = true
+            }
+        }
+
+        return handled
     }
 }

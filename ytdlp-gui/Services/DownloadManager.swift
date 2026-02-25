@@ -94,6 +94,39 @@ class DownloadManager: ObservableObject {
             if stealth.proxyEnabled, let proxy = StealthManager.shared.nextProxy() {
                 options.proxy = proxy
             }
+            // Enhanced anti-detection: player client rotation, referer, headers
+            if stealth.usePlayerClientRotation {
+                let clients = stealth.playerClients
+                if !clients.isEmpty {
+                    let client = clients.randomElement() ?? "web"
+                    options.extractorArgs.append("youtube:player_client=\(client)")
+                }
+            }
+            if stealth.setReferer {
+                options.referer = "https://www.youtube.com/"
+            }
+            if stealth.sendConsentCookie {
+                options.addHeaders.append("Cookie: CONSENT=PENDING+999")
+            }
+            // Sleep between requests to mimic human behavior
+            if stealth.sleepBetweenRequests > 0 {
+                options.sleepRequests = stealth.sleepBetweenRequests
+                options.sleepInterval = stealth.minDelay
+                options.maxSleepInterval = stealth.maxDelay
+            }
+            // PO Token for YouTube bot verification bypass
+            if let poToken = stealth.poToken, !poToken.isEmpty {
+                if let visitorData = stealth.visitorData, !visitorData.isEmpty {
+                    options.extractorArgs.append("youtube:player_client=web;po_token=\(poToken);visitor_data=\(visitorData)")
+                } else {
+                    options.extractorArgs.append("youtube:po_token=\(poToken)")
+                }
+            }
+        }
+
+        // Apply speed limiter
+        if let rateLimit = SpeedLimiter.shared.rateLimitArgument() {
+            options.limitRate = rateLimit
         }
 
         let task = Task {
@@ -118,6 +151,11 @@ class DownloadManager: ObservableObject {
                         let fileSize = self.getFileSize(path: result.outputPath)
                         let libraryItem = LibraryItem(from: self.queue[idx], filePath: result.outputPath ?? "", fileSize: fileSize)
                         DataStore.shared.addToLibrary(libraryItem)
+
+                        // Execute post-download actions
+                        if let outputPath = result.outputPath {
+                            PostDownloadManager.shared.executeActions(for: outputPath, metadata: self.queue[idx])
+                        }
 
                         // Send notification
                         self.sendCompletionNotification(title: self.queue[idx].title ?? "Download", success: true)
