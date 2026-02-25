@@ -167,7 +167,6 @@ ytdlp-gui works with **any site supported by yt-dlp** — over **1,800 sites** a
 | **Pluralsight** | Lessons, courses |
 | **Frontend Masters** | Lessons, courses |
 | **egghead.io** | Lessons, courses |
-| **Nebula** | Videos, channels, subscriptions |
 | **CuriosityStream** | Videos, collections, series |
 | **BrainPOP** | Educational videos (multiple languages) |
 | **Laracasts** | Videos, series |
@@ -180,7 +179,6 @@ ytdlp-gui works with **any site supported by yt-dlp** — over **1,800 sites** a
 | **YouTube Live** | Live streams, premieres |
 | **TwitCasting** | Live streams, user archives |
 | **AfreecaTV (SOOP)** | Live streams, catch stories, user profiles |
-| **Chaturbate** | Live streams |
 | **Livestream** | Live and archived content |
 | **Trovo** | Live streams, VODs, channel clips |
 | **LivestreamFails** | Clips |
@@ -214,26 +212,41 @@ ytdlp-gui works with **any site supported by yt-dlp** — over **1,800 sites** a
 | **Wimbledon** | Videos |
 | **MLS Soccer** | Videos |
 
-### Other Notable Sites
+### Cloud & File Hosting
 | Site | Notes |
 |------|-------|
 | **Archive.org** | Videos, audio, collections |
-| **Flickr** | Videos |
-| **Imgur** | Videos, albums, galleries |
 | **Dropbox** | Shared video files |
 | **Google Drive** | Shared video files, folders |
-| **Loom** | Screen recordings |
+| **Loom** | Screen recordings, folders |
 | **Streamable** | Video clips |
-| **Patreon** | Posts, campaigns |
-| **Gab** | Videos, Gab TV |
-| **Substack** | Embedded video/audio |
 | **Wistia** | Business video hosting, channels, playlists |
 | **Brightcove** | Enterprise video platform |
+| **SharePoint** | Microsoft hosted videos |
+
+### Entertainment & Gaming
+| Site | Notes |
+|------|-------|
 | **Vevo** | Music videos, playlists |
 | **GameSpot** | Gaming videos |
 | **IGN** | Gaming/entertainment videos |
 | **Steam** | Game trailers, community content, broadcasts |
-| **GitHub** | Via generic extractor |
+| **Rooster Teeth** | Videos, series |
+| **Funimation** | Via Crunchyroll |
+| **South Park** | Episodes (multiple regions) |
+| **Conan Classic** | Classic episodes |
+| **Comedy Central** | Episodes, clips |
+
+### Creator Platforms
+| Site | Notes |
+|------|-------|
+| **Patreon** | Posts, campaigns |
+| **Substack** | Embedded video/audio |
+| **Nebula** | Videos, channels, subscriptions |
+| **Floatplane** | Videos, channels |
+| **Boosty** | Creator content |
+| **Imgur** | Videos, albums, galleries |
+| **Flickr** | Videos |
 
 > **Note:** Some sites require authentication (cookies or login). Use the Anti-Detection panel to import browser cookies. Some extractors may be temporarily broken — check yt-dlp's issue tracker for current status. Keeping yt-dlp updated ensures the best compatibility.
 
