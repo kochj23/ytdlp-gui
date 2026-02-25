@@ -95,18 +95,33 @@ class DownloadManager: ObservableObject {
                 options.proxy = proxy
             }
             // Enhanced anti-detection: player client rotation, referer, headers
-            if stealth.usePlayerClientRotation {
+            // Build a single youtube extractor-args string to avoid conflicts
+            var ytExtractorParts: [String] = []
+
+            if let poToken = stealth.poToken, !poToken.isEmpty {
+                // PO token requires web client - override rotation
+                ytExtractorParts.append("player_client=web")
+                ytExtractorParts.append("po_token=\(poToken)")
+                if let visitorData = stealth.visitorData, !visitorData.isEmpty {
+                    ytExtractorParts.append("visitor_data=\(visitorData)")
+                }
+            } else if stealth.usePlayerClientRotation {
                 let clients = stealth.playerClients
                 if !clients.isEmpty {
                     let client = clients.randomElement() ?? "web"
-                    options.extractorArgs.append("youtube:player_client=\(client)")
+                    ytExtractorParts.append("player_client=\(client)")
                 }
             }
+
+            if !ytExtractorParts.isEmpty {
+                options.extractorArgs.append("youtube:\(ytExtractorParts.joined(separator: ";"))")
+            }
+
             if stealth.setReferer {
                 options.referer = "https://www.youtube.com/"
             }
             if stealth.sendConsentCookie {
-                options.addHeaders.append("Cookie: CONSENT=PENDING+999")
+                options.addHeaders.append("Cookie:CONSENT=PENDING+999")
             }
             // Sleep between requests to mimic human behavior
             if stealth.sleepBetweenRequests > 0 {
@@ -114,13 +129,9 @@ class DownloadManager: ObservableObject {
                 options.sleepInterval = stealth.minDelay
                 options.maxSleepInterval = stealth.maxDelay
             }
-            // PO Token for YouTube bot verification bypass
-            if let poToken = stealth.poToken, !poToken.isEmpty {
-                if let visitorData = stealth.visitorData, !visitorData.isEmpty {
-                    options.extractorArgs.append("youtube:player_client=web;po_token=\(poToken);visitor_data=\(visitorData)")
-                } else {
-                    options.extractorArgs.append("youtube:po_token=\(poToken)")
-                }
+            // Cookie file support (when source is .file)
+            if stealth.cookieSource == .file, let cookiePath = stealth.cookieFilePath, !cookiePath.isEmpty {
+                options.cookies = cookiePath
             }
         }
 
@@ -166,11 +177,16 @@ class DownloadManager: ObservableObject {
             } catch let error as YTDLPError {
                 await MainActor.run {
                     if let idx = self.queue.firstIndex(where: { $0.id == id }) {
-                        if error == .rateLimited && stealth.retryOn429 && self.queue[idx].retryCount < stealth.maxRetries {
-                            // Auto-retry with identity rotation
+                        let isRetryable = (error == .rateLimited || error == .forbidden)
+                        if isRetryable && stealth.retryOn429 && self.queue[idx].retryCount < stealth.maxRetries {
+                            // Auto-retry with identity rotation for both 429 and 403
                             self.queue[idx].retryCount += 1
                             self.queue[idx].status = .retrying
-                            self.logger.info("Rate limited, retrying (\(self.queue[idx].retryCount)/\(stealth.maxRetries))")
+                            let errorCode = error == .rateLimited ? "429" : "403"
+                            self.logger.info("HTTP \(errorCode), rotating identity and retrying (\(self.queue[idx].retryCount)/\(stealth.maxRetries))")
+
+                            // Rotate identity before retry
+                            StealthManager.shared.rotateIdentity()
 
                             Task {
                                 let backoff = StealthManager.shared.exponentialBackoff(attempt: self.queue[idx].retryCount)

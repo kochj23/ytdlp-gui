@@ -238,9 +238,15 @@ class YTDLPService: ObservableObject {
                     continuation.resume(returning: result)
                 } else {
                     // Check for specific error types
-                    if errorOutput.contains("HTTP Error 429") || fullOutput.contains("HTTP Error 429") {
+                    let combinedOutput = errorOutput + fullOutput
+                    if combinedOutput.contains("HTTP Error 429") || combinedOutput.contains("429 Too Many Requests") {
                         continuation.resume(throwing: YTDLPError.rateLimited)
-                    } else if errorOutput.contains("HTTP Error 403") || fullOutput.contains("HTTP Error 403") {
+                    } else if combinedOutput.contains("HTTP Error 403")
+                                || combinedOutput.contains("403 Forbidden")
+                                || combinedOutput.contains("Sign in to confirm")
+                                || combinedOutput.contains("confirm you're not a bot")
+                                || combinedOutput.contains("bot verification")
+                                || combinedOutput.contains("This video is not available") {
                         continuation.resume(throwing: YTDLPError.forbidden)
                     } else {
                         let errorMsg = errorOutput.isEmpty ? fullOutput : errorOutput

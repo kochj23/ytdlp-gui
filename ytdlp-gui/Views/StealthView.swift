@@ -8,6 +8,8 @@
 //
 
 import SwiftUI
+import AppKit
+import UniformTypeIdentifiers
 
 struct StealthView: View {
     @EnvironmentObject var dataStore: DataStore
@@ -117,6 +119,12 @@ struct StealthView: View {
                                 Text("Cookie Source")
                                     .font(.system(size: 16, weight: .semibold, design: .rounded))
                                     .foregroundColor(ModernColors.textPrimary)
+                                Spacer()
+                                if dataStore.stealthProfile.cookieSource != .none {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(ModernColors.accentGreen)
+                                        .font(.system(size: 14))
+                                }
                             }
 
                             Picker("Browser", selection: $dataStore.stealthProfile.cookieSource) {
@@ -128,6 +136,34 @@ struct StealthView: View {
                             .onChange(of: dataStore.stealthProfile.cookieSource) { _ in
                                 dataStore.saveStealthProfile()
                             }
+
+                            // Cookie file picker when .file is selected
+                            if dataStore.stealthProfile.cookieSource == .file {
+                                HStack {
+                                    TextField("Cookie file path (Netscape format)...", text: Binding(
+                                        get: { dataStore.stealthProfile.cookieFilePath ?? "" },
+                                        set: { dataStore.stealthProfile.cookieFilePath = $0.isEmpty ? nil : $0; dataStore.saveStealthProfile() }
+                                    ))
+                                    .formTextField()
+
+                                    Button("Browse") {
+                                        let panel = NSOpenPanel()
+                                        panel.canChooseFiles = true
+                                        panel.canChooseDirectories = false
+                                        panel.allowedContentTypes = [.text, .plainText]
+                                        panel.message = "Select a Netscape-format cookies.txt file"
+                                        if panel.runModal() == .OK, let url = panel.url {
+                                            dataStore.stealthProfile.cookieFilePath = url.path
+                                            dataStore.saveStealthProfile()
+                                        }
+                                    }
+                                    .buttonStyle(ModernButtonStyle(color: ModernColors.purple, style: .outlined))
+                                }
+                            }
+
+                            Text("Importing cookies from your browser is the #1 most effective fix for YouTube 403 errors.")
+                                .font(.system(size: 11, weight: .medium, design: .rounded))
+                                .foregroundColor(ModernColors.accentGreen)
                         }
                         .glassCard()
                     }
@@ -142,9 +178,30 @@ struct StealthView: View {
                                 Text("YouTube Anti-403")
                                     .font(.system(size: 16, weight: .semibold, design: .rounded))
                                     .foregroundColor(ModernColors.textPrimary)
+                                Spacer()
+                                Button("Update yt-dlp") {
+                                    Task { try? await BinaryManager.shared.updateYTDLP() }
+                                }
+                                .buttonStyle(ModernButtonStyle(color: ModernColors.accentGreen, style: .outlined))
                             }
 
-                            Toggle("Rotate player clients (web/android/ios)", isOn: $dataStore.stealthProfile.usePlayerClientRotation)
+                            // Quick fix checklist
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Fix Checklist (in order of effectiveness):")
+                                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                    .foregroundColor(ModernColors.yellow)
+                                fixChecklistItem("1. Update yt-dlp to latest version", done: false)
+                                fixChecklistItem("2. Import cookies from browser", done: dataStore.stealthProfile.cookieSource != .none)
+                                fixChecklistItem("3. Enable TLS impersonation (Chrome)", done: dataStore.stealthProfile.impersonateTarget != nil)
+                                fixChecklistItem("4. Player client rotation", done: dataStore.stealthProfile.usePlayerClientRotation)
+                                fixChecklistItem("5. Set YouTube referer", done: dataStore.stealthProfile.setReferer)
+                                fixChecklistItem("6. Send CONSENT cookie", done: dataStore.stealthProfile.sendConsentCookie)
+                            }
+                            .padding(10)
+                            .background(Color.white.opacity(0.03))
+                            .cornerRadius(8)
+
+                            Toggle("Rotate player clients (web/android/ios/mweb)", isOn: $dataStore.stealthProfile.usePlayerClientRotation)
                                 .onChange(of: dataStore.stealthProfile.usePlayerClientRotation) { _ in
                                     dataStore.saveStealthProfile()
                                 }
@@ -170,30 +227,52 @@ struct StealthView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("PO Token (optional)")
-                                    .font(.system(size: 12, design: .rounded))
-                                    .foregroundColor(ModernColors.textSecondary)
-                                TextField("Paste PO token...", text: Binding(
+                                HStack {
+                                    Text("PO Token")
+                                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                                        .foregroundColor(ModernColors.textSecondary)
+                                    Spacer()
+                                    if dataStore.stealthProfile.poToken != nil {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(ModernColors.accentGreen)
+                                            .font(.system(size: 12))
+                                    }
+                                }
+                                TextField("Paste PO token from browser DevTools...", text: Binding(
                                     get: { dataStore.stealthProfile.poToken ?? "" },
                                     set: { dataStore.stealthProfile.poToken = $0.isEmpty ? nil : $0; dataStore.saveStealthProfile() }
                                 ))
                                 .formTextField()
+                                Text("When set, forces web client. Get from browser Network tab → innertube request → po_token.")
+                                    .font(.system(size: 10, design: .rounded))
+                                    .foregroundColor(ModernColors.textTertiary)
                             }
 
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Visitor Data (optional)")
-                                    .font(.system(size: 12, design: .rounded))
-                                    .foregroundColor(ModernColors.textSecondary)
+                                HStack {
+                                    Text("Visitor Data")
+                                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                                        .foregroundColor(ModernColors.textSecondary)
+                                    Spacer()
+                                    if dataStore.stealthProfile.visitorData != nil {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(ModernColors.accentGreen)
+                                            .font(.system(size: 12))
+                                    }
+                                }
                                 TextField("Paste visitor data...", text: Binding(
                                     get: { dataStore.stealthProfile.visitorData ?? "" },
                                     set: { dataStore.stealthProfile.visitorData = $0.isEmpty ? nil : $0; dataStore.saveStealthProfile() }
                                 ))
                                 .formTextField()
+                                Text("From same innertube request. Pairs with PO token for full session auth.")
+                                    .font(.system(size: 10, design: .rounded))
+                                    .foregroundColor(ModernColors.textTertiary)
                             }
 
-                            Text("Tip: Cookie import from your browser is the most effective 403 fix. Also keep yt-dlp updated.")
-                                .font(.system(size: 11, design: .rounded))
-                                .foregroundColor(ModernColors.yellow)
+                            Text("403 errors auto-retry with identity rotation (up to \(dataStore.stealthProfile.maxRetries) attempts).")
+                                .font(.system(size: 11, weight: .medium, design: .rounded))
+                                .foregroundColor(ModernColors.cyan)
                         }
                         .glassCard()
 
@@ -298,6 +377,19 @@ struct StealthView: View {
                 }
             }
             .padding(32)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func fixChecklistItem(_ text: String, done: Bool) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                .foregroundColor(done ? ModernColors.accentGreen : ModernColors.textTertiary)
+                .font(.system(size: 11))
+            Text(text)
+                .font(.system(size: 11, design: .rounded))
+                .foregroundColor(done ? ModernColors.textSecondary : ModernColors.textTertiary)
         }
     }
 }
