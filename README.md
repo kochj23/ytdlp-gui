@@ -15,7 +15,7 @@ A modern macOS GUI for [yt-dlp](https://github.com/yt-dlp/yt-dlp) with full feat
 - **Output template builder** — Build custom filename templates with variable chips
 - **Anti-detection suite** — User agent rotation (50+ agents), random delays, TLS impersonation, proxy rotation, cookie import from Chrome/Firefox/Safari/Edge/Brave, auto-retry on HTTP 429 with exponential backoff
 - **Download library** — Persistent history with thumbnails, search, filtering, favorites
-- **Download presets** — Built-in presets (Best Video, Audio MP3, Audio FLAC, 1080p, 720p, Stealth Mode) plus custom presets
+- **Download presets** — Built-in presets (Best Video, Audio MP3, Audio FLAC (Free Lossless Audio Codec), 1080p, 720p, Stealth Mode) plus custom presets
 - **Binary management** — Auto-detect yt-dlp and ffmpeg, one-click updates
 - **Real-time progress** — Live progress bars, speed display, ETA, circular speed gauge
 - **macOS notifications** — Completion/failure notifications
@@ -33,7 +33,7 @@ The app uses a dark glassmorphic design with animated floating blobs, glass card
 
 ## Installation
 
-### DMG (Recommended)
+### DMG (Disk Image) (Recommended)
 1. Download the latest DMG from [Releases](https://github.com/kochj23/ytdlp-gui/releases)
 2. Open the DMG and drag ytdlp-gui to Applications
 3. Launch from Applications
@@ -73,7 +73,7 @@ ytdlp-gui works with **any site supported by yt-dlp** — over **1,800 sites** a
 | **YouTube** | Videos, playlists, channels, shorts, live streams, music |
 | **Vimeo** | Videos, albums, channels, on-demand, user profiles |
 | **Dailymotion** | Videos, playlists, user uploads, search |
-| **Twitch** | Live streams, VODs, clips, collections |
+| **Twitch** | Live streams, VODs (Video On Demand), clips, collections |
 | **Rumble** | Videos, channels, embeds |
 | **Bilibili** | Videos, bangumi, audio, playlists, live, search |
 | **Niconico** | Videos, live, playlists, series, user uploads |
@@ -257,7 +257,7 @@ The stealth system helps avoid rate limiting and detection:
 - **User Agent Rotation** — 50+ real browser user agents, shuffled without repeats until pool is exhausted
 - **Random Delays** — Configurable min/max delays between requests
 - **Cookie Import** — Use cookies from Chrome, Firefox, Safari, Edge, Brave, Opera, Vivaldi
-- **TLS Impersonation** — Impersonate browser TLS fingerprints via yt-dlp's `--impersonate`
+- **TLS (Transport Layer Security) Impersonation** — Impersonate browser TLS fingerprints via yt-dlp's `--impersonate`
 - **Proxy Rotation** — Round-robin through a list of SOCKS5/HTTP proxies
 - **Auto-Retry** — Exponential backoff with identity rotation on HTTP 429
 
