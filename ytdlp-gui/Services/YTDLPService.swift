@@ -96,6 +96,43 @@ class YTDLPService: ObservableObject {
         isRunning = false
     }
 
+    // MARK: - Subprocess Environment
+
+    /// Builds an environment for yt-dlp subprocesses that includes Homebrew
+    /// paths.  macOS GUI apps inherit a minimal launchd environment with only
+    /// /usr/bin:/bin:/usr/sbin:/sbin in PATH — Homebrew tools (deno, ffmpeg)
+    /// are invisible to subprocesses unless we augment it here.
+    private func buildSubprocessEnvironment() -> [String: String] {
+        var env = ProcessInfo.processInfo.environment
+
+        // Collect every directory that might hold our tools, deduplicating.
+        let extraPaths = [
+            "/opt/homebrew/bin",    // Homebrew (Apple Silicon)
+            "/opt/homebrew/sbin",
+            "/usr/local/bin",       // Homebrew (Intel)
+            "/usr/local/sbin",
+            "/usr/bin",
+            "/bin",
+            "/usr/sbin",
+            "/sbin",
+        ]
+
+        // Prepend extra paths to whatever PATH is already set so Homebrew wins.
+        let existingPath = env["PATH"] ?? ""
+        let combined = (extraPaths + existingPath.split(separator: ":").map(String.init))
+            .reduce(into: [String]()) { acc, p in
+                if !acc.contains(p) { acc.append(p) }
+            }
+        env["PATH"] = combined.joined(separator: ":")
+
+        // Ensure HOME is set so yt-dlp can find its cache / config.
+        if env["HOME"] == nil {
+            env["HOME"] = NSHomeDirectory()
+        }
+
+        return env
+    }
+
     // MARK: - Process Execution (Real-time streaming)
 
     private func executeProcess(binaryPath: String, arguments: [String]) async throws -> DownloadResult {
@@ -116,6 +153,7 @@ class YTDLPService: ObservableObject {
 
             process.executableURL = URL(fileURLWithPath: binaryPath)
             process.arguments = arguments
+            process.environment = buildSubprocessEnvironment()
 
             let outputPipe = Pipe()
             let errorPipe = Pipe()
@@ -279,6 +317,7 @@ class YTDLPService: ObservableObject {
             process.arguments = arguments
             process.standardOutput = pipe
             process.standardError = errorPipe
+            process.environment = buildSubprocessEnvironment()
 
             // Use terminationHandler instead of waitUntilExit() to avoid
             // blocking a Swift concurrency thread.
