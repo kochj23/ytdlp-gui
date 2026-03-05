@@ -28,7 +28,8 @@ class DataStore: ObservableObject {
     var appSupportDirectory: URL { dataDirectory }
 
     private var dataDirectory: URL {
-        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSTemporaryDirectory())
         let appDir = appSupport.appendingPathComponent("ytdlp-gui", isDirectory: true)
         try? fileManager.createDirectory(at: appDir, withIntermediateDirectories: true)
         return appDir
@@ -92,6 +93,11 @@ class DataStore: ObservableObject {
 
     func removeFromLibrary(_ id: UUID) {
         library.removeAll { $0.id == id }
+        saveJSON(library, to: libraryFile)
+    }
+
+    func batchRemoveFromLibrary(ids: Set<UUID>) {
+        library.removeAll { ids.contains($0.id) }
         saveJSON(library, to: libraryFile)
     }
 

@@ -1,10 +1,11 @@
 # ytdlp-gui
 
-A modern macOS GUI for [yt-dlp](https://github.com/yt-dlp/yt-dlp) with full feature coverage, anti-detection capabilities, and a glassmorphic dark UI.
+A modern macOS GUI for [yt-dlp](https://github.com/yt-dlp/yt-dlp) with full feature coverage, anti-detection capabilities, and a glassmorphic UI.
 
 ![macOS](https://img.shields.io/badge/macOS-13.0%2B-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
+![Version](https://img.shields.io/badge/version-1.1.1-brightgreen)
 
 ## Features
 
@@ -13,17 +14,24 @@ A modern macOS GUI for [yt-dlp](https://github.com/yt-dlp/yt-dlp) with full feat
 - **Playlist detection** — Auto-detect YouTube playlists, browse entries, selectively download
 - **Format selector** — Visual format picker with quality comparison and quick presets
 - **Output template builder** — Build custom filename templates with variable chips
-- **Anti-detection suite** — User agent rotation (50+ agents), random delays, TLS impersonation, proxy rotation, cookie import from Chrome/Firefox/Safari/Edge/Brave, auto-retry on HTTP 429 with exponential backoff
+- **Anti-detection suite** — User agent rotation (50+ agents), random delays, TLS impersonation, proxy rotation, cookie import from Chrome/Firefox/Safari/Edge/Brave, player client rotation, PO token support, auto-retry on HTTP 429/403 with exponential backoff and identity rotation
 - **Download library** — Persistent history with thumbnails, search, filtering, favorites
-- **Download presets** — Built-in presets (Best Video, Audio MP3, Audio FLAC (Free Lossless Audio Codec), 1080p, 720p, Stealth Mode) plus custom presets
+- **Download presets** — Built-in presets (Best Video, Audio MP3, Audio FLAC, 1080p, 720p, Stealth Mode) plus custom presets
+- **Clipboard monitor** — Watches clipboard for video URLs and offers instant download
+- **Scheduled downloads** — Set downloads to run at a specific time, with repeating rules (daily, weekly, etc.)
+- **Channel subscriptions** — Subscribe to channels/playlists for automatic new-content downloads
+- **SponsorBlock editor** — Visual timeline editor to remove sponsor segments before download
+- **Post-download actions** — Move, convert, tag, run shell scripts, or open in app after download
+- **Speed limiter** — Global or per-download speed caps with handy presets
 - **Binary management** — Auto-detect yt-dlp and ffmpeg, one-click updates
 - **Real-time progress** — Live progress bars, speed display, ETA, circular speed gauge
-- **macOS notifications** — Completion/failure notifications
+- **macOS notifications** — Completion/failure notifications with domain-only clipboard alerts
 - **Log viewer** — Color-coded real-time yt-dlp output
+- **Light/Dark/System theme** — Full theme support
 
 ## Screenshots
 
-The app uses a dark glassmorphic design with animated floating blobs, glass cards, and vibrant accent colors.
+The app uses a glassmorphic design with animated floating blobs, glass cards, and vibrant accent colors. Supports Light, Dark, and System themes.
 
 ## Requirements
 
@@ -33,7 +41,7 @@ The app uses a dark glassmorphic design with animated floating blobs, glass card
 
 ## Installation
 
-### DMG (Disk Image) (Recommended)
+### DMG (Recommended)
 1. Download the latest DMG from [Releases](https://github.com/kochj23/ytdlp-gui/releases)
 2. Open the DMG and drag ytdlp-gui to Applications
 3. Launch from Applications
@@ -60,6 +68,9 @@ xcodebuild -project ytdlp-gui.xcodeproj -scheme ytdlp-gui -configuration Release
 4. **All Options** — Fine-tune every yt-dlp flag across 17 categories
 5. **Anti-Detection** — Enable stealth mode to rotate user agents, add random delays, and auto-retry on rate limits
 6. **Library** — Browse download history with search, favorites, and one-click re-download
+7. **Clipboard Monitor** — Enable in Tools menu to automatically detect video URLs you copy
+8. **Scheduler** — Schedule downloads for off-peak hours or recurring content
+9. **Subscriptions** — Subscribe to YouTube channels and get new videos downloaded automatically
 
 ## Supported Sites
 
@@ -256,18 +267,46 @@ The stealth system helps avoid rate limiting and detection:
 
 - **User Agent Rotation** — 50+ real browser user agents, shuffled without repeats until pool is exhausted
 - **Random Delays** — Configurable min/max delays between requests
-- **Cookie Import** — Use cookies from Chrome, Firefox, Safari, Edge, Brave, Opera, Vivaldi
-- **TLS (Transport Layer Security) Impersonation** — Impersonate browser TLS fingerprints via yt-dlp's `--impersonate`
+- **Cookie Import** — Use cookies from Chrome, Firefox, Safari, Edge, Brave, Opera, Vivaldi, or a Netscape-format cookie file
+- **TLS Impersonation** — Impersonate browser TLS fingerprints via yt-dlp's `--impersonate` (requires curl_cffi)
+- **Player Client Rotation** — Rotate between YouTube player clients (web, android, iOS, mweb)
+- **PO Token Support** — Optional PO token + visitor data for enhanced YouTube access
 - **Proxy Rotation** — Round-robin through a list of SOCKS5/HTTP proxies
-- **Auto-Retry** — Exponential backoff with identity rotation on HTTP 429
+- **Auto-Retry** — Exponential backoff with identity rotation on HTTP 429 (rate limit) and HTTP 403 (forbidden)
 
 ## Architecture
 
-- **SwiftUI** with `@MainActor` concurrency
-- **Process** execution with real-time `readabilityHandler` streaming
+- **SwiftUI** with `@MainActor` concurrency throughout
+- **Process** execution with real-time `readabilityHandler` streaming for live progress
+- **Non-blocking subprocess management** — all version checks, metadata fetches, and updates use `terminationHandler` rather than blocking Swift concurrency threads
 - **JSON persistence** in `~/Library/Application Support/ytdlp-gui/`
-- **XcodeGen** for project generation
+- **XcodeGen** for project generation (`project.yml`)
 - No sandbox — direct file system access for maximum functionality
+
+## Changelog
+
+### v1.1.1 (2026-03-05)
+- **Security:** Fixed command injection vulnerability in shell script post-download action
+- **Security:** Fixed URL injection in SponsorBlock API calls via proper percent-encoding
+- **Security:** Clipboard monitor notifications no longer expose full URLs
+- **Fix:** Playlist entry list identity bug (UUID regenerated on every render)
+- **Fix:** Race condition when patching download metadata by queue index
+- **Fix:** Scheduler writing to disk on every 30-second tick regardless of changes
+- **Performance:** Metadata fetches and binary management no longer block Swift concurrency threads
+- **Performance:** Binary path resolution is now cached per session
+- **Performance:** Bulk library cleanup uses a single disk write instead of N writes
+- **Architecture:** Speed limiter settings migrated from UserDefaults to DataStore
+- **Architecture:** Removed force-unwraps on Application Support directory lookup
+- **Feature:** Light theme added (Light/Dark/System)
+
+### v1.1.0
+- Clipboard monitor, scheduled downloads, channel subscriptions
+- SponsorBlock visual editor, post-download action pipeline
+- Speed limiter with presets
+- Player client rotation, PO token support for YouTube
+
+### v1.0.0
+- Initial release
 
 ## License
 

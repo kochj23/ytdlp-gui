@@ -59,13 +59,10 @@ class HistoryManager: ObservableObject {
 
     func removeOldItems(olderThan days: Int) {
         let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-        let toRemove = DataStore.shared.library.filter { $0.downloadedAt < cutoff }
-
-        for item in toRemove {
-            DataStore.shared.removeFromLibrary(item.id)
-        }
-
-        logger.info("Removed \(toRemove.count) items older than \(days) days")
+        let ids = Set(DataStore.shared.library.filter { $0.downloadedAt < cutoff }.map(\.id))
+        guard !ids.isEmpty else { return }
+        DataStore.shared.batchRemoveFromLibrary(ids: ids)
+        logger.info("Removed \(ids.count) items older than \(days) days")
     }
 
     func exportHistory(to url: URL) throws {

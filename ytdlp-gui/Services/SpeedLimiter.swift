@@ -3,6 +3,7 @@
 //  ytdlp-gui
 //
 //  Download speed limiting (per-download and global)
+//  Persists via DataStore/AppSettings (consistent with all other settings).
 //  Created by Jordan Koch on 2026-02-25.
 //  Copyright © 2026 Jordan Koch. All rights reserved.
 //
@@ -14,11 +15,28 @@ import os
 class SpeedLimiter: ObservableObject {
     static let shared = SpeedLimiter()
 
-    @Published var isEnabled = false
-    @Published var globalLimitKBps: Int = 0 // 0 = unlimited
-    @Published var perDownloadLimitKBps: Int = 0
-
     private let logger = Logger(subsystem: "com.jordankoch.ytdlp-gui", category: "SpeedLimiter")
+
+    @Published var isEnabled: Bool = false {
+        didSet {
+            DataStore.shared.settings.speedLimiterEnabled = isEnabled
+            DataStore.shared.saveSettings()
+        }
+    }
+
+    @Published var globalLimitKBps: Int = 0 {
+        didSet {
+            DataStore.shared.settings.speedLimiterGlobalKBps = globalLimitKBps
+            DataStore.shared.saveSettings()
+        }
+    }
+
+    @Published var perDownloadLimitKBps: Int = 0 {
+        didSet {
+            DataStore.shared.settings.speedLimiterPerDownloadKBps = perDownloadLimitKBps
+            DataStore.shared.saveSettings()
+        }
+    }
 
     // Preset speed limits
     static let presets: [(String, Int)] = [
@@ -62,17 +80,16 @@ class SpeedLimiter: ObservableObject {
         return "\(kbps) KB/s"
     }
 
-    // MARK: - Persistence
-
-    func save() {
-        UserDefaults.standard.set(isEnabled, forKey: "speedLimiter.enabled")
-        UserDefaults.standard.set(globalLimitKBps, forKey: "speedLimiter.globalLimit")
-        UserDefaults.standard.set(perDownloadLimitKBps, forKey: "speedLimiter.perDownloadLimit")
-    }
+    // MARK: - Persistence (backed by DataStore)
 
     func load() {
-        isEnabled = UserDefaults.standard.bool(forKey: "speedLimiter.enabled")
-        globalLimitKBps = UserDefaults.standard.integer(forKey: "speedLimiter.globalLimit")
-        perDownloadLimitKBps = UserDefaults.standard.integer(forKey: "speedLimiter.perDownloadLimit")
+        isEnabled = DataStore.shared.settings.speedLimiterEnabled
+        globalLimitKBps = DataStore.shared.settings.speedLimiterGlobalKBps
+        perDownloadLimitKBps = DataStore.shared.settings.speedLimiterPerDownloadKBps
+    }
+
+    func save() {
+        // No-op: saves happen automatically in @Published didSet blocks.
+        // Kept for API compatibility.
     }
 }

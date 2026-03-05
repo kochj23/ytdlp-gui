@@ -360,20 +360,22 @@ struct NewDownloadView: View {
         dataStore.settings.outputDirectory = outputDirectory
         dataStore.saveSettings()
 
-        // Update metadata on the download item
-        downloadManager.enqueue(
+        // Capture the ID returned by enqueue so we can patch the correct item
+        // even if another download was added concurrently between the append
+        // and the index lookup.
+        let enqueuedID = downloadManager.enqueue(
             url: urlText,
             options: options,
             presetName: selectedPreset?.name
         )
 
-        // Update the queued item with metadata
+        // Update the queued item with pre-fetched metadata
         if let metadata = metadata,
-           let lastIdx = downloadManager.queue.indices.last {
-            downloadManager.queue[lastIdx].title = metadata.title
-            downloadManager.queue[lastIdx].uploader = metadata.uploader ?? metadata.channel
-            downloadManager.queue[lastIdx].duration = metadata.duration
-            downloadManager.queue[lastIdx].thumbnailURL = metadata.thumbnailUrl
+           let idx = downloadManager.queue.firstIndex(where: { $0.id == enqueuedID }) {
+            downloadManager.queue[idx].title = metadata.title
+            downloadManager.queue[idx].uploader = metadata.uploader ?? metadata.channel
+            downloadManager.queue[idx].duration = metadata.duration
+            downloadManager.queue[idx].thumbnailURL = metadata.thumbnailUrl
         }
 
         // Reset form

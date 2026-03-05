@@ -35,8 +35,8 @@ class MetadataService: ObservableObject {
     // MARK: - Fetch Available Formats
 
     func fetchFormats(url: String) async throws -> [FormatInfo] {
-        let service = YTDLPService()
-        let metadata = try await service.fetchMetadata(url: url)
+        // Reuse fetchMetadata so we don't spin up a second YTDLPService instance
+        let metadata = try await fetchMetadata(url: url)
         return metadata.formats ?? []
     }
 

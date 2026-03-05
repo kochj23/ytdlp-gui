@@ -34,12 +34,14 @@ class DownloadManager: ObservableObject {
 
     // MARK: - Enqueue
 
-    func enqueue(url: String, options: YTDLPOptions = YTDLPOptions(), presetName: String? = nil) {
+    @discardableResult
+    func enqueue(url: String, options: YTDLPOptions = YTDLPOptions(), presetName: String? = nil) -> UUID {
         var item = DownloadItem(url: url, options: options)
         item.presetName = presetName
         queue.append(item)
         logger.info("Enqueued: \(url)")
         processQueue()
+        return item.id
     }
 
     func enqueueMultiple(urls: [String], options: YTDLPOptions = YTDLPOptions()) {

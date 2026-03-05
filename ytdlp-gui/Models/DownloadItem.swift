@@ -30,9 +30,8 @@ struct DownloadItem: Identifiable, Codable {
     var startedAt: Date?
     var completedAt: Date?
 
-    // Retry
+    // Retry (retry limit is controlled by StealthProfile.maxRetries)
     var retryCount: Int = 0
-    var maxRetries: Int = 3
 
     // Playlist context
     var playlistTitle: String?

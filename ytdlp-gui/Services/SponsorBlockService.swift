@@ -30,8 +30,15 @@ class SponsorBlockService: ObservableObject {
         let categories = SponsorBlockSegment.SegmentCategory.allCases.map(\.rawValue)
         let categoriesParam = "[" + categories.map { "\"\($0)\"" }.joined(separator: ",") + "]"
 
-        guard let url = URL(string: "\(apiBase)/skipSegments?videoID=\(videoID)&categories=\(categoriesParam)") else {
-            logger.error("Invalid SponsorBlock URL")
+        // Use URLComponents so videoID is properly percent-encoded and cannot
+        // inject extra query parameters.
+        var components = URLComponents(string: "\(apiBase)/skipSegments")
+        components?.queryItems = [
+            URLQueryItem(name: "videoID", value: videoID),
+            URLQueryItem(name: "categories", value: categoriesParam),
+        ]
+        guard let url = components?.url else {
+            logger.error("Invalid SponsorBlock URL for videoID: \(videoID)")
             return
         }
 

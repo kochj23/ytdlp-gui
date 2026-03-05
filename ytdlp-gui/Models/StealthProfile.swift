@@ -23,7 +23,6 @@ struct StealthProfile: Codable {
 
     var proxyEnabled: Bool = false
     var proxyList: [String] = []
-    var currentProxyIndex: Int = 0
 
     var retryOn429: Bool = true
     var maxRetries: Int = 5
@@ -38,7 +37,6 @@ struct StealthProfile: Codable {
     var sleepBetweenRequests: Double = 1.0
     var poToken: String?
     var visitorData: String?
-    var useOAuth: Bool = false
 }
 
 enum CookieSource: String, Codable, CaseIterable, Identifiable {

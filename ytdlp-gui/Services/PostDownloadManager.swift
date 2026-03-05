@@ -83,15 +83,20 @@ class PostDownloadManager: ObservableObject {
         guard let scriptPath = config.scriptPath else { return }
 
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/bash")
+        // Execute the script directly — do NOT use /bin/bash -c with joined
+        // arguments, as that would allow shell injection via filePath or title.
+        process.executableURL = URL(fileURLWithPath: scriptPath)
 
-        var args = [scriptPath, filePath]
-        if let extraArgs = config.scriptArguments {
-            args.append(contentsOf: extraArgs.components(separatedBy: " "))
+        var args = [filePath]
+        if let extraArgs = config.scriptArguments, !extraArgs.isEmpty {
+            // Split on whitespace so each token is a separate argument and the
+            // shell never interprets special characters in any of them.
+            args.append(contentsOf: extraArgs.components(separatedBy: " ").filter { !$0.isEmpty })
         }
-        process.arguments = ["-c", args.joined(separator: " ")]
+        process.arguments = args
 
-        // Environment with metadata
+        // Pass metadata as environment variables so values with spaces or
+        // special characters are never shell-expanded.
         var env = ProcessInfo.processInfo.environment
         env["YTDLP_FILE"] = filePath
         env["YTDLP_TITLE"] = metadata.title ?? ""

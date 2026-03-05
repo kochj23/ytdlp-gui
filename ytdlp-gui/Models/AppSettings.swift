@@ -25,7 +25,13 @@ struct AppSettings: Codable {
     var defaultOutputTemplate: String = "%(title)s.%(ext)s"
     var theme: AppTheme = .dark
 
+    // Speed limiter (migrated from UserDefaults)
+    var speedLimiterEnabled: Bool = false
+    var speedLimiterGlobalKBps: Int = 0
+    var speedLimiterPerDownloadKBps: Int = 0
+
     enum AppTheme: String, Codable, CaseIterable {
+        case light = "Light"
         case dark = "Dark"
         case system = "System"
     }

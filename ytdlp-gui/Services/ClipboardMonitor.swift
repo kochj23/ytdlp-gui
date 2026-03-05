@@ -131,7 +131,9 @@ class ClipboardMonitor: ObservableObject {
     private func sendDetectionNotification(url: String) {
         let content = UNMutableNotificationContent()
         content.title = "Video URL Detected"
-        content.body = url
+        // Show domain only — full URLs can contain session tokens or tracking
+        // parameters visible to anyone glancing at Notification Center.
+        content.body = URL(string: url)?.host ?? "Tap to download"
         content.sound = .default
         content.categoryIdentifier = "CLIPBOARD_URL"
 

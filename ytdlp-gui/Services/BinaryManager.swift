@@ -22,8 +22,12 @@ class BinaryManager: ObservableObject {
     private let logger = Logger(subsystem: "com.jordankoch.ytdlp-gui", category: "BinaryManager")
     private let fileManager = FileManager.default
 
+    // Cache resolved paths so findBinary() doesn't re-run `which` on every call
+    private var binaryPathCache: [String: String] = [:]
+
     private var appSupportBinDir: URL {
-        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSTemporaryDirectory())
         let binDir = appSupport.appendingPathComponent("ytdlp-gui/bin", isDirectory: true)
         try? fileManager.createDirectory(at: binDir, withIntermediateDirectories: true)
         return binDir
@@ -41,32 +45,39 @@ class BinaryManager: ObservableObject {
 
     /// Searches for a binary in order: app support, bundle, Homebrew (ARM/Intel), PATH via `which`
     private func findBinary(_ name: String) -> String {
+        if let cached = binaryPathCache[name] { return cached }
+
         // 1. App support (updated binary)
         let appSupportPath = appSupportBinDir.appendingPathComponent(name).path
         if fileManager.isExecutableFile(atPath: appSupportPath) {
+            binaryPathCache[name] = appSupportPath
             return appSupportPath
         }
 
         // 2. Bundled binary
         if let bundledPath = Bundle.main.path(forResource: name, ofType: nil, inDirectory: "Binaries"),
            fileManager.isExecutableFile(atPath: bundledPath) {
+            binaryPathCache[name] = bundledPath
             return bundledPath
         }
 
         // 3. Homebrew (Apple Silicon)
         let homebrewARM = "/opt/homebrew/bin/\(name)"
         if fileManager.isExecutableFile(atPath: homebrewARM) {
+            binaryPathCache[name] = homebrewARM
             return homebrewARM
         }
 
         // 4. Homebrew (Intel)
         let homebrewIntel = "/usr/local/bin/\(name)"
         if fileManager.isExecutableFile(atPath: homebrewIntel) {
+            binaryPathCache[name] = homebrewIntel
             return homebrewIntel
         }
 
         // 5. Resolve from PATH using `which`
         if let resolved = resolveFromPATH(name) {
+            binaryPathCache[name] = resolved
             return resolved
         }
 
@@ -120,30 +131,36 @@ class BinaryManager: ObservableObject {
             process.standardOutput = pipe
             process.standardError = pipe
 
-            do {
-                try process.run()
-                process.waitUntilExit()
-
-                let data = pipe.fileHandleForReading.readDataToEndOfFile()
-                if let output = String(data: data, encoding: .utf8)?
-                    .trimmingCharacters(in: .whitespacesAndNewlines) {
-                    // ffmpeg outputs a long string, grab first line
-                    let firstLine = output.components(separatedBy: "\n").first ?? output
-                    if firstLine.contains("ffmpeg version") {
-                        // Parse: "ffmpeg version 7.1 Copyright..."
-                        let parts = firstLine.components(separatedBy: " ")
-                        if parts.count >= 3 {
-                            continuation.resume(returning: parts[2])
-                            return
-                        }
-                    }
-                    continuation.resume(returning: firstLine)
+            // Use terminationHandler so we don't block a Swift concurrency thread
+            process.terminationHandler = { proc in
+                guard proc.terminationStatus == 0 else {
+                    continuation.resume(returning: "Not Found")
                     return
                 }
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                guard let output = String(data: data, encoding: .utf8)?
+                    .trimmingCharacters(in: .whitespacesAndNewlines) else {
+                    continuation.resume(returning: "Not Found")
+                    return
+                }
+                // ffmpeg outputs a long string — grab the version from the first line
+                let firstLine = output.components(separatedBy: "\n").first ?? output
+                if firstLine.contains("ffmpeg version") {
+                    let parts = firstLine.components(separatedBy: " ")
+                    if parts.count >= 3 {
+                        continuation.resume(returning: parts[2])
+                        return
+                    }
+                }
+                continuation.resume(returning: firstLine)
+            }
+
+            do {
+                try process.run()
             } catch {
                 logger.error("Failed to get version for \(binary): \(error.localizedDescription)")
+                continuation.resume(returning: "Not Found")
             }
-            continuation.resume(returning: "Not Found")
         }
     }
 
@@ -168,15 +185,22 @@ class BinaryManager: ObservableObject {
             process.arguments = ["--list-impersonate-targets"]
             process.standardOutput = pipe
             process.standardError = pipe
-            do {
-                try process.run()
-                process.waitUntilExit()
+
+            // Use terminationHandler so we don't block a Swift concurrency thread
+            process.terminationHandler = { proc in
+                guard proc.terminationStatus == 0 else {
+                    continuation.resume(returning: false)
+                    return
+                }
                 let data = pipe.fileHandleForReading.readDataToEndOfFile()
                 let output = String(data: data, encoding: .utf8) ?? ""
-                // If any target shows without "(unavailable)", impersonate works
                 let hasAvailable = output.contains("Chrome") && !output.contains("(unavailable)")
                     || output.contains("Safari") && !output.split(separator: "\n").filter { $0.contains("Safari") }.allSatisfy { $0.contains("unavailable") }
                 continuation.resume(returning: hasAvailable)
+            }
+
+            do {
+                try process.run()
             } catch {
                 continuation.resume(returning: false)
             }
@@ -194,29 +218,43 @@ class BinaryManager: ObservableObject {
         updateStatus = "Checking for updates..."
         defer { isUpdating = false }
 
-        // Use yt-dlp's built-in update mechanism
-        let process = Process()
-        let pipe = Pipe()
+        do {
+            let output: String = try await withCheckedThrowingContinuation { continuation in
+                let process = Process()
+                let pipe = Pipe()
 
-        process.executableURL = URL(fileURLWithPath: ytdlpPath)
-        process.arguments = ["--update"]
-        process.standardOutput = pipe
-        process.standardError = pipe
+                process.executableURL = URL(fileURLWithPath: ytdlpPath)
+                process.arguments = ["--update"]
+                process.standardOutput = pipe
+                process.standardError = pipe
 
-        try process.run()
-        process.waitUntilExit()
+                // Use terminationHandler so we don't block a Swift concurrency thread
+                process.terminationHandler = { proc in
+                    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                    let output = String(data: data, encoding: .utf8) ?? ""
+                    if proc.terminationStatus == 0 {
+                        continuation.resume(returning: output)
+                    } else {
+                        continuation.resume(throwing: YTDLPError.downloadFailed(output))
+                    }
+                }
 
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        let output = String(data: data, encoding: .utf8) ?? ""
-
-        if process.terminationStatus == 0 {
+                do {
+                    try process.run()
+                } catch {
+                    continuation.resume(throwing: YTDLPError.executionFailed(error))
+                }
+            }
             updateStatus = "Updated successfully"
             logger.info("yt-dlp update output: \(output)")
-        } else {
-            updateStatus = "Update failed: \(output)"
-            logger.error("yt-dlp update failed: \(output)")
+        } catch {
+            updateStatus = "Update failed: \(error.localizedDescription)"
+            logger.error("yt-dlp update failed: \(error.localizedDescription)")
+            throw error
         }
 
+        // Invalidate path cache so next lookup picks up the new binary
+        binaryPathCache.removeValue(forKey: "yt-dlp")
         await detectVersions()
     }
 
@@ -241,5 +279,8 @@ class BinaryManager: ObservableObject {
                 }
             }
         }
+
+        // Invalidate cache so newly copied binaries are picked up
+        binaryPathCache.removeAll()
     }
 }

@@ -63,6 +63,7 @@ class ScheduleManager: ObservableObject {
 
     private func processSchedules() {
         let now = Date()
+        var didChange = false
 
         for index in scheduledDownloads.indices {
             guard scheduledDownloads[index].isEnabled,
@@ -77,6 +78,7 @@ class ScheduleManager: ObservableObject {
 
             scheduledDownloads[index].status = .completed
             scheduledDownloads[index].lastRunDate = now
+            didChange = true
 
             // Handle repeating
             if schedule.repeatRule != .once, let nextDate = schedule.nextRunDate {
@@ -88,7 +90,10 @@ class ScheduleManager: ObservableObject {
             logger.info("Executed scheduled download: \(schedule.url)")
         }
 
-        saveSchedules()
+        // Only write to disk when something actually changed
+        if didChange {
+            saveSchedules()
+        }
     }
 
     // MARK: - Persistence

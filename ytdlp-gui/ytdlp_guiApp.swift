@@ -30,7 +30,7 @@ struct ytdlp_guiApp: App {
             ContentView()
                 .environmentObject(dataStore)
                 .environmentObject(downloadManager)
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(dataStore.settings.theme.colorScheme)
                 .onAppear {
                     setupApp()
                 }
@@ -136,4 +136,17 @@ struct ytdlp_guiApp: App {
 
 extension Notification.Name {
     static let newDownload = Notification.Name("newDownload")
+}
+
+// MARK: - AppTheme SwiftUI Helpers
+
+extension AppSettings.AppTheme {
+    /// Maps to SwiftUI's ColorScheme. nil means "follow system".
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .dark:   return .dark
+        case .light:  return .light
+        case .system: return nil
+        }
+    }
 }

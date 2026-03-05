@@ -267,7 +267,7 @@ class YTDLPService: ObservableObject {
         }
     }
 
-    // MARK: - Simple Execution (capture full output)
+    // MARK: - Simple Execution (capture full output, non-blocking)
 
     private func executeSimple(binaryPath: String, arguments: [String]) async throws -> String {
         return try await withCheckedThrowingContinuation { continuation in
@@ -280,20 +280,23 @@ class YTDLPService: ObservableObject {
             process.standardOutput = pipe
             process.standardError = errorPipe
 
-            do {
-                try process.run()
-                process.waitUntilExit()
-
+            // Use terminationHandler instead of waitUntilExit() to avoid
+            // blocking a Swift concurrency thread.
+            process.terminationHandler = { proc in
                 let data = pipe.fileHandleForReading.readDataToEndOfFile()
                 let output = String(data: data, encoding: .utf8) ?? ""
 
-                if process.terminationStatus == 0 {
+                if proc.terminationStatus == 0 {
                     continuation.resume(returning: output)
                 } else {
                     let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
                     let errorOutput = String(data: errorData, encoding: .utf8) ?? ""
                     continuation.resume(throwing: YTDLPError.downloadFailed(errorOutput.isEmpty ? output : errorOutput))
                 }
+            }
+
+            do {
+                try process.run()
             } catch {
                 continuation.resume(throwing: YTDLPError.executionFailed(error))
             }
@@ -475,7 +478,11 @@ struct PlaylistInfo: Codable {
 }
 
 struct PlaylistEntry: Identifiable, Codable {
-    var id: String { entryId ?? UUID().uuidString }
+    // Stable ID for Identifiable: prefer the entry's own id, fall back to a
+    // UUID assigned at decode time.  Never generate a new UUID on each access
+    // or SwiftUI will treat the same entry as a new object every render cycle.
+    var id: String { entryId ?? fallbackId }
+
     var entryId: String?
     var title: String?
     var url: String?
@@ -483,10 +490,34 @@ struct PlaylistEntry: Identifiable, Codable {
     var thumbnailUrl: String?
     var uploader: String?
 
+    // Not persisted — used only as a stable Identifiable fallback
+    private let fallbackId: String
+
     enum CodingKeys: String, CodingKey {
         case entryId = "id"
         case title, url, duration, uploader
         case thumbnailUrl = "thumbnail"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        entryId = try container.decodeIfPresent(String.self, forKey: .entryId)
+        title = try container.decodeIfPresent(String.self, forKey: .title)
+        url = try container.decodeIfPresent(String.self, forKey: .url)
+        duration = try container.decodeIfPresent(TimeInterval.self, forKey: .duration)
+        uploader = try container.decodeIfPresent(String.self, forKey: .uploader)
+        thumbnailUrl = try container.decodeIfPresent(String.self, forKey: .thumbnailUrl)
+        fallbackId = UUID().uuidString
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(entryId, forKey: .entryId)
+        try container.encodeIfPresent(title, forKey: .title)
+        try container.encodeIfPresent(url, forKey: .url)
+        try container.encodeIfPresent(duration, forKey: .duration)
+        try container.encodeIfPresent(uploader, forKey: .uploader)
+        try container.encodeIfPresent(thumbnailUrl, forKey: .thumbnailUrl)
     }
 
     var durationFormatted: String? {
