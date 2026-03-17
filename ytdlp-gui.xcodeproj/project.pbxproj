@@ -19,6 +19,7 @@
 		2CBBD6CA361E5D335D29872D /* FormatSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC4F132833B31B75355ABD0 /* FormatSelectorView.swift */; };
 		3646A6D419A6119FB786C402 /* HistoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7037FE80901A1AA1B61B913 /* HistoryManager.swift */; };
 		36D3B54F3F239F9C875A2418 /* BinaryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD1735B8C1DE1D99FDF6ADE /* BinaryManager.swift */; };
+		37F421D53382280E9840A283 /* NovaAPIServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74AC7658F0CCD795456CB785 /* NovaAPIServer.swift */; };
 		3873FBB175ECA7D9F6117114 /* AudioWaveformService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0578F9697355E46BDA3A37 /* AudioWaveformService.swift */; };
 		3B6EC8204074EE6BE033D564 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8742DA0FCF01BFD38034E1D /* LogView.swift */; };
 		3C19ED7549806C88BD31C19A /* PlaylistService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B096BBBF71D7C39D04D94600 /* PlaylistService.swift */; };
@@ -105,6 +106,7 @@
 		6755C6D2B332D087FF4B0945 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6DB1329B1A3A9FCD082AD971 /* ytdlp-gui.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ytdlp-gui.entitlements"; sourceTree = "<group>"; };
 		72449F7DFF9EC68D815D4520 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		74AC7658F0CCD795456CB785 /* NovaAPIServer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NovaAPIServer.swift; sourceTree = "<absolute>"; };
 		80461031FCAA0745067C515F /* AudioWaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioWaveformView.swift; sourceTree = "<group>"; };
 		80BCC29C050C346FB5B372E7 /* NewDownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewDownloadView.swift; sourceTree = "<group>"; };
 		8526187A04340CA8F517C840 /* OutputTemplateBuilderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutputTemplateBuilderView.swift; sourceTree = "<group>"; };
@@ -208,6 +210,7 @@
 				67F3BE97F5B49067241566FE /* Resources */,
 				0FBB8E0A233776DE8D77D4DD /* Services */,
 				86817F1B00CD7F1A9CFAA265 /* Views */,
+				74AC7658F0CCD795456CB785 /* NovaAPIServer.swift */,
 			);
 			path = "ytdlp-gui";
 			sourceTree = "<group>";
@@ -292,8 +295,6 @@
 			dependencies = (
 			);
 			name = "ytdlp-gui";
-			packageProductDependencies = (
-			);
 			productName = "ytdlp-gui";
 			productReference = 0FD44011FF11F14BC296A88B /* ytdlp-gui.app */;
 			productType = "com.apple.product-type.application";
@@ -310,8 +311,6 @@
 				E128583540A512F42BDEE458 /* PBXTargetDependency */,
 			);
 			name = "ytdlp-guiTests";
-			packageProductDependencies = (
-			);
 			productName = "ytdlp-guiTests";
 			productReference = A38A0228F9B622443CA26243 /* ytdlp-guiTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -344,6 +343,7 @@
 			mainGroup = 30911CA3E6EA47C8FE438133;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
+			productRefGroup = D01CAA45F0B22580A8F81F67 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -431,6 +431,7 @@
 				1EDE89498267E72212B0959F /* YTDLPOptions.swift in Sources */,
 				107490B147DB25A5DBACD68F /* YTDLPService.swift in Sources */,
 				262DC218ADFBDBAD87A12EC3 /* ytdlp_guiApp.swift in Sources */,
+				37F421D53382280E9840A283 /* NovaAPIServer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
