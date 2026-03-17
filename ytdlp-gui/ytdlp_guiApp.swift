@@ -21,6 +21,7 @@ struct ytdlp_guiApp: App {
     @StateObject private var speedLimiter = SpeedLimiter.shared
 
     init() {
+        NovaAPIServer.shared.start()
         // Request notification permissions
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
