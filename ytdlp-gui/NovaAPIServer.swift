@@ -46,21 +46,21 @@ class NovaAPIServer {
         if req.method == "OPTIONS" { return http(200, "") }
         switch (req.method, req.path) {
         case ("GET", "/api/status"):
-            return json(200, ["status": "running", "app": "ytdlpGui", "version": "1.0", "port": "\(port)", "uptimeSeconds": Int(Date().timeIntervalSince(startTime))])
+            return json(200, ["status": "running", "app": "ytdlpGui", "version": "1.0", "port": "\(port)", "uptimeSeconds": Int(Date().timeIntervalSince(startTime))] as [String: Any])
         case ("GET", "/api/downloads"):
-            return json(200, ["status": "see_app", "note": "Download queue accessible via app"])
+            return json(200, ["status": "see_app", "note": "Download queue accessible via app"] as [String: Any])
 
         case ("POST", "/api/download"):
             guard let body = req.bodyJSON(), let url = body["url"] as? String else {
-                return json(400, ["error": "url required"])
+                return json(400, ["error": "url required"] as [String: Any])
             }
-            return json(200, ["status": "queued", "url": url])
+            return json(200, ["status": "queued", "url": url] as [String: Any])
 
         case ("GET", "/api/ping"):
-            return json(200, ["pong": true])
+            return json(200, ["pong": "true"] as [String: Any])
 
         default:
-            return json(404, ["error": "Not found: \(req.method) \(req.path)"])
+            return json(404, ["error": "Not found: \(req.method) \(req.path)"] as [String: Any])
         }
     }
     private struct NovaRequest {
@@ -70,7 +70,7 @@ class NovaAPIServer {
             guard let raw = String(data: data, encoding: .utf8), raw.contains("\r\n\r\n") else { return nil }
             let parts = raw.components(separatedBy: "\r\n\r\n"); let lines = parts[0].components(separatedBy: "\r\n")
             guard let rl = lines.first else { return nil }; let tokens = rl.components(separatedBy: " "); guard tokens.count >= 2 else { return nil }
-            var hdrs: [String: String] = []; for l in lines.dropFirst() { let kv = l.components(separatedBy: ": "); if kv.count >= 2 { hdrs[kv[0].lowercased()] = kv.dropFirst().joined(separator: ": ") } }
+            var hdrs: [String: String] = [:]; for l in lines.dropFirst() { let kv = l.components(separatedBy: ": "); if kv.count >= 2 { hdrs[kv[0].lowercased()] = kv.dropFirst().joined(separator: ": ") } }
             let rawBody = parts.dropFirst().joined(separator: "\r\n\r\n")
             if let cl = hdrs["content-length"], let n = Int(cl), rawBody.utf8.count < n { return nil }
             method = tokens[0]; path = tokens[1].components(separatedBy: "?").first ?? tokens[1]; body = rawBody

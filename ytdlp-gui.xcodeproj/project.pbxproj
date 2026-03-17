@@ -106,7 +106,7 @@
 		6755C6D2B332D087FF4B0945 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6DB1329B1A3A9FCD082AD971 /* ytdlp-gui.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ytdlp-gui.entitlements"; sourceTree = "<group>"; };
 		72449F7DFF9EC68D815D4520 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		74AC7658F0CCD795456CB785 /* NovaAPIServer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NovaAPIServer.swift; sourceTree = "<absolute>"; };
+		74AC7658F0CCD795456CB785 /* NovaAPIServer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "/Volumes/Data/xcode/ytdlp-gui/ytdlp-gui/NovaAPIServer.swift"; sourceTree = "<absolute>"; };
 		80461031FCAA0745067C515F /* AudioWaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioWaveformView.swift; sourceTree = "<group>"; };
 		80BCC29C050C346FB5B372E7 /* NewDownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewDownloadView.swift; sourceTree = "<group>"; };
 		8526187A04340CA8F517C840 /* OutputTemplateBuilderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutputTemplateBuilderView.swift; sourceTree = "<group>"; };
