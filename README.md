@@ -2,10 +2,10 @@
 
 A modern macOS GUI for [yt-dlp](https://github.com/yt-dlp/yt-dlp) with full feature coverage, anti-detection capabilities, and a glassmorphic UI.
 
-![macOS](https://img.shields.io/badge/macOS-13.0%2B-blue)
+![macOS](https://img.shields.io/badge/macOS-14.0%2B-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/version-1.1.1-brightgreen)
+![Version](https://img.shields.io/badge/version-1.2.0-brightgreen)
 
 ## Features
 
@@ -26,6 +26,10 @@ A modern macOS GUI for [yt-dlp](https://github.com/yt-dlp/yt-dlp) with full feat
 - **Binary management** — Auto-detect yt-dlp and ffmpeg, one-click updates
 - **Real-time progress** — Live progress bars, speed display, ETA, circular speed gauge
 - **macOS notifications** — Completion/failure notifications with domain-only clipboard alerts
+- **macOS Widget (v1.2.0)** — Live download queue in Notification Center (Small/Medium/Large sizes)
+  - Small: Progress ring + queue summary
+  - Medium: Active download with progress bar, speed, ETA, and daily stats
+  - Large: Full dashboard with per-item rows, stealth mode indicator, and total downloaded
 - **Log viewer** — Color-coded real-time yt-dlp output
 - **Light/Dark/System theme** — Full theme support
 
@@ -35,7 +39,7 @@ The app uses a glassmorphic design with animated floating blobs, glass cards, an
 
 ## Requirements
 
-- macOS 13.0 (Ventura) or later
+- macOS 14.0 (Sonoma) or later
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp) installed (via Homebrew: `brew install yt-dlp`)
 - [ffmpeg](https://ffmpeg.org/) recommended for format merging (`brew install ffmpeg`)
 

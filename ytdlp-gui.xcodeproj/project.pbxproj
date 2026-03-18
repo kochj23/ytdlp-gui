@@ -19,13 +19,14 @@
 		2CBBD6CA361E5D335D29872D /* FormatSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC4F132833B31B75355ABD0 /* FormatSelectorView.swift */; };
 		3646A6D419A6119FB786C402 /* HistoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7037FE80901A1AA1B61B913 /* HistoryManager.swift */; };
 		36D3B54F3F239F9C875A2418 /* BinaryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD1735B8C1DE1D99FDF6ADE /* BinaryManager.swift */; };
-		37F421D53382280E9840A283 /* NovaAPIServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74AC7658F0CCD795456CB785 /* NovaAPIServer.swift */; };
 		3873FBB175ECA7D9F6117114 /* AudioWaveformService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0578F9697355E46BDA3A37 /* AudioWaveformService.swift */; };
 		3B6EC8204074EE6BE033D564 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8742DA0FCF01BFD38034E1D /* LogView.swift */; };
 		3C19ED7549806C88BD31C19A /* PlaylistService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B096BBBF71D7C39D04D94600 /* PlaylistService.swift */; };
 		3FBB5084689978C00930F06C /* SponsorBlockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E93D1F83258F3ADF019E3FF /* SponsorBlockService.swift */; };
 		409E978097DA439C18D25718 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8DE05A5048C8FFFA2530BA /* SettingsView.swift */; };
+		41B5181426BC1ABE90F20C84 /* ytdlp-gui Widget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3BB068D17EF929B3474D83E9 /* ytdlp-gui Widget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4248EF1FC03D28DD41DFD432 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FBC7BE628AE8AEE2E76B3D3 /* LibraryView.swift */; };
+		42D24947C1F469F7C6008F29 /* WidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E001AB4F963161F38099A6B0 /* WidgetData.swift */; };
 		42E3C8820E50F92498AC90ED /* SponsorBlockSegment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59AC73A4FEA5A2459A408DFC /* SponsorBlockSegment.swift */; };
 		4636036CB19A1A5832B236F7 /* OutputTemplateBuilderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8526187A04340CA8F517C840 /* OutputTemplateBuilderView.swift */; };
 		497F2B41C89128AE2C3740DC /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DAF6A89C4CA105895E96A6D /* ScheduleView.swift */; };
@@ -38,7 +39,9 @@
 		5F7CDA64B96237AE0FA2A18E /* MetadataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B817B2362C9EAA9323527545 /* MetadataService.swift */; };
 		685B67DFE3E9D1950158B3F1 /* BinaryManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9916098C34CCE670100FD2F8 /* BinaryManagerView.swift */; };
 		6C8EB87A0E3FBA6250A03DD2 /* ClipboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDDDACD926BE04AB752F502 /* ClipboardMonitor.swift */; };
+		77E428D6BC3C4E38C14FA1FB /* ytdlp_guiWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81DAE73B909AD35F60BE2850 /* ytdlp_guiWidget.swift */; };
 		7F14C20E29BD419F27556F23 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DE256DB81990882BBCDB3D /* AppSettings.swift */; };
+		80F9F8140BC93BA31E95DBFE /* SharedDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA8A441E344E42B1382C0C3 /* SharedDataManager.swift */; };
 		81DFCD76BE8E37A47A6D6D78 /* ScheduleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDDDEAA5150B913D0DA5DF90 /* ScheduleManager.swift */; };
 		844EE6A6B102AC400FF0E5F8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6755C6D2B332D087FF4B0945 /* Assets.xcassets */; };
 		8549FDB72B14574213591242 /* CookieImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F403F6DD0BF7DEEC1C33544E /* CookieImporter.swift */; };
@@ -53,8 +56,10 @@
 		BAE7CBC7EFF8752F599110DE /* PostDownloadAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A84A02B1FFEF22D5E356BAE /* PostDownloadAction.swift */; };
 		BF1FC05213C2BE969AE1485F /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E7A0E032F7AD2DA8622D5 /* SubscriptionManager.swift */; };
 		BF42F08E385BC3334A8B2AC5 /* ScheduleConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC99E0E286345B4E82F0F7E /* ScheduleConfig.swift */; };
+		C0B9D7ECDB75AC658B489EFA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F5BFF8295A30368B23235523 /* Assets.xcassets */; };
 		C379E01644F9921388C0F420 /* SponsorBlockEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CFE3549CC51FE5C819C37D7 /* SponsorBlockEditorView.swift */; };
 		C39CD7B96996B4F14D75B952 /* DownloadItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 082EE99562C6B35950619B30 /* DownloadItem.swift */; };
+		CE03B264708201CD1EAC3E59 /* WidgetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = E001AB4F963161F38099A6B0 /* WidgetData.swift */; };
 		CE7AC57E4C65C5FFD396E7B1 /* ytdlp_guiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBF44FA1B16C4CB8B1D09B7 /* ytdlp_guiTests.swift */; };
 		DB2E4A2F31EC14AF5E9896C5 /* PresetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63A2A15573FC4B4FC6BEF51 /* PresetsView.swift */; };
 		DE4F49DC38E9EF9BACCECEFD /* StealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D107B2F92360A51DBF7C20F /* StealthManager.swift */; };
@@ -62,11 +67,20 @@
 		F2F7411A1738720F95E372E3 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 333C18BACD1762C629154077 /* DashboardView.swift */; };
 		F45B00AD107991B388050262 /* OptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26B57832E90F7A2DD014A2C5 /* OptionsView.swift */; };
 		F934F091A17166C2A692F80D /* SpeedLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1D900BDA946968DD3A6971 /* SpeedLimiter.swift */; };
+		FE86B2A8A5FAE777817978D8 /* WidgetDataSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25BB9B0FC6B405D9159AA4EC /* WidgetDataSync.swift */; };
 		FE8919F4DEF6873896B25EBB /* DownloadPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4720604B38E53ED94281D540 /* DownloadPreset.swift */; };
+		FFADD63DA147F0D4CB3B20E0 /* NovaAPIServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C5D59CCBD45F394A6C7C1E /* NovaAPIServer.swift */; };
 		FFD10D8A0A3C3B44E4F3B0B7 /* AudioWaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80461031FCAA0745067C515F /* AudioWaveformView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		708F21FB591673A51196DFCD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E93EB13006AD9001652CBC37 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 81F0A41EE6D49D88845173E6;
+			remoteInfo = "ytdlp-gui Widget";
+		};
 		C6A4513FA00AD43403934935 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E93EB13006AD9001652CBC37 /* Project object */;
@@ -75,6 +89,20 @@
 			remoteInfo = "ytdlp-gui";
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0A52AB7B6D5A6CBCA5CC620E /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				41B5181426BC1ABE90F20C84 /* ytdlp-gui Widget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		082EE99562C6B35950619B30 /* DownloadItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadItem.swift; sourceTree = "<group>"; };
@@ -87,6 +115,7 @@
 		1A7E7A0E032F7AD2DA8622D5 /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManager.swift; sourceTree = "<group>"; };
 		1D107B2F92360A51DBF7C20F /* StealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StealthManager.swift; sourceTree = "<group>"; };
 		1D8DE05A5048C8FFFA2530BA /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		25BB9B0FC6B405D9159AA4EC /* WidgetDataSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataSync.swift; sourceTree = "<group>"; };
 		26B57832E90F7A2DD014A2C5 /* OptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionsView.swift; sourceTree = "<group>"; };
 		2BDDDACD926BE04AB752F502 /* ClipboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardMonitor.swift; sourceTree = "<group>"; };
 		2DBF44FA1B16C4CB8B1D09B7 /* ytdlp_guiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ytdlp_guiTests.swift; sourceTree = "<group>"; };
@@ -95,8 +124,10 @@
 		363BC967F49F0D2D9814CF62 /* SpeedGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedGaugeView.swift; sourceTree = "<group>"; };
 		37D402D1122CEBE03E8CD6BF /* ChannelSubscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelSubscription.swift; sourceTree = "<group>"; };
 		3A08FD9F245A92055A533AE3 /* PostDownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostDownloadView.swift; sourceTree = "<group>"; };
+		3BB068D17EF929B3474D83E9 /* ytdlp-gui Widget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "ytdlp-gui Widget.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3C0578F9697355E46BDA3A37 /* AudioWaveformService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioWaveformService.swift; sourceTree = "<group>"; };
 		3C2745F50D2204DDC7369AE4 /* LibraryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryDetailView.swift; sourceTree = "<group>"; };
+		3EA8A441E344E42B1382C0C3 /* SharedDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedDataManager.swift; sourceTree = "<group>"; };
 		4720604B38E53ED94281D540 /* DownloadPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadPreset.swift; sourceTree = "<group>"; };
 		4FBC7BE628AE8AEE2E76B3D3 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		55CC760AA98B633EFABE1B5F /* ModernDesign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModernDesign.swift; sourceTree = "<group>"; };
@@ -106,9 +137,10 @@
 		6755C6D2B332D087FF4B0945 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6DB1329B1A3A9FCD082AD971 /* ytdlp-gui.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ytdlp-gui.entitlements"; sourceTree = "<group>"; };
 		72449F7DFF9EC68D815D4520 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		74AC7658F0CCD795456CB785 /* NovaAPIServer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "/Volumes/Data/xcode/ytdlp-gui/ytdlp-gui/NovaAPIServer.swift"; sourceTree = "<absolute>"; };
 		80461031FCAA0745067C515F /* AudioWaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioWaveformView.swift; sourceTree = "<group>"; };
 		80BCC29C050C346FB5B372E7 /* NewDownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewDownloadView.swift; sourceTree = "<group>"; };
+		80C5D59CCBD45F394A6C7C1E /* NovaAPIServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NovaAPIServer.swift; sourceTree = "<group>"; };
+		81DAE73B909AD35F60BE2850 /* ytdlp_guiWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ytdlp_guiWidget.swift; sourceTree = "<group>"; };
 		8526187A04340CA8F517C840 /* OutputTemplateBuilderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutputTemplateBuilderView.swift; sourceTree = "<group>"; };
 		8E928038429F28C8D155DE65 /* SpeedLimitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedLimitView.swift; sourceTree = "<group>"; };
 		9916098C34CCE670100FD2F8 /* BinaryManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinaryManagerView.swift; sourceTree = "<group>"; };
@@ -125,18 +157,21 @@
 		B329FD625A1FA40FD7811AAC /* ClipboardMonitorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardMonitorView.swift; sourceTree = "<group>"; };
 		B817B2362C9EAA9323527545 /* MetadataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataService.swift; sourceTree = "<group>"; };
 		B8742DA0FCF01BFD38034E1D /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
+		BA542A52554D5D1B69D158BD /* ytdlp_gui_Widget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ytdlp_gui_Widget.entitlements; sourceTree = "<group>"; };
 		C2B7698E3A6F107F6423CC3B /* BatchImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchImportView.swift; sourceTree = "<group>"; };
 		CD1D900BDA946968DD3A6971 /* SpeedLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedLimiter.swift; sourceTree = "<group>"; };
 		CDD3FE868B5C3B1C74F04562 /* DownloadProgressCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressCard.swift; sourceTree = "<group>"; };
 		CE6FA929FDA88D94C79A9D11 /* LibraryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryItem.swift; sourceTree = "<group>"; };
 		D66968B2A28440AADB6EF8E9 /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
 		D7037FE80901A1AA1B61B913 /* HistoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryManager.swift; sourceTree = "<group>"; };
+		E001AB4F963161F38099A6B0 /* WidgetData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetData.swift; sourceTree = "<group>"; };
 		E3DE256DB81990882BBCDB3D /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		EDDDEAA5150B913D0DA5DF90 /* ScheduleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleManager.swift; sourceTree = "<group>"; };
 		EF4589E8D3FB169EEF1ADA17 /* QueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueView.swift; sourceTree = "<group>"; };
 		EF7C1C287E15D06EC4372EA0 /* YTDLPService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YTDLPService.swift; sourceTree = "<group>"; };
 		F205C1943BEEEF69D2119624 /* StealthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StealthView.swift; sourceTree = "<group>"; };
 		F403F6DD0BF7DEEC1C33544E /* CookieImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieImporter.swift; sourceTree = "<group>"; };
+		F5BFF8295A30368B23235523 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FA4856572B15006BC51EA23D /* ytdlp_guiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ytdlp_guiApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -159,6 +194,7 @@
 				2E93D1F83258F3ADF019E3FF /* SponsorBlockService.swift */,
 				1D107B2F92360A51DBF7C20F /* StealthManager.swift */,
 				1A7E7A0E032F7AD2DA8622D5 /* SubscriptionManager.swift */,
+				25BB9B0FC6B405D9159AA4EC /* WidgetDataSync.swift */,
 				EF7C1C287E15D06EC4372EA0 /* YTDLPService.swift */,
 			);
 			path = Services;
@@ -168,6 +204,7 @@
 			isa = PBXGroup;
 			children = (
 				70478F38ECA6B4B174C37FA5 /* ytdlp-gui */,
+				68712B345AB92AA94CA79B87 /* ytdlp-gui Widget */,
 				B5554C7E4B613CAAB4C7981F /* ytdlp-guiTests */,
 				D01CAA45F0B22580A8F81F67 /* Products */,
 			);
@@ -199,10 +236,23 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
+		68712B345AB92AA94CA79B87 /* ytdlp-gui Widget */ = {
+			isa = PBXGroup;
+			children = (
+				F5BFF8295A30368B23235523 /* Assets.xcassets */,
+				3EA8A441E344E42B1382C0C3 /* SharedDataManager.swift */,
+				E001AB4F963161F38099A6B0 /* WidgetData.swift */,
+				BA542A52554D5D1B69D158BD /* ytdlp_gui_Widget.entitlements */,
+				81DAE73B909AD35F60BE2850 /* ytdlp_guiWidget.swift */,
+			);
+			path = "ytdlp-gui Widget";
+			sourceTree = "<group>";
+		};
 		70478F38ECA6B4B174C37FA5 /* ytdlp-gui */ = {
 			isa = PBXGroup;
 			children = (
 				B0BB0AEDC79EAA2AEF6E7EBD /* Info.plist */,
+				80C5D59CCBD45F394A6C7C1E /* NovaAPIServer.swift */,
 				FA4856572B15006BC51EA23D /* ytdlp_guiApp.swift */,
 				6DB1329B1A3A9FCD082AD971 /* ytdlp-gui.entitlements */,
 				A4E70F4BD64F70A393B50800 /* Design */,
@@ -210,7 +260,6 @@
 				67F3BE97F5B49067241566FE /* Resources */,
 				0FBB8E0A233776DE8D77D4DD /* Services */,
 				86817F1B00CD7F1A9CFAA265 /* Views */,
-				74AC7658F0CCD795456CB785 /* NovaAPIServer.swift */,
 			);
 			path = "ytdlp-gui";
 			sourceTree = "<group>";
@@ -264,6 +313,7 @@
 		D01CAA45F0B22580A8F81F67 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				3BB068D17EF929B3474D83E9 /* ytdlp-gui Widget.appex */,
 				0FD44011FF11F14BC296A88B /* ytdlp-gui.app */,
 				A38A0228F9B622443CA26243 /* ytdlp-guiTests.xctest */,
 			);
@@ -289,12 +339,16 @@
 			buildPhases = (
 				8C7B8F1ED4CDB6FB4F5414F1 /* Sources */,
 				5A2C2FC13654350314C0620D /* Resources */,
+				0A52AB7B6D5A6CBCA5CC620E /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				F10D80952F3386365F1B6724 /* PBXTargetDependency */,
 			);
 			name = "ytdlp-gui";
+			packageProductDependencies = (
+			);
 			productName = "ytdlp-gui";
 			productReference = 0FD44011FF11F14BC296A88B /* ytdlp-gui.app */;
 			productType = "com.apple.product-type.application";
@@ -311,9 +365,29 @@
 				E128583540A512F42BDEE458 /* PBXTargetDependency */,
 			);
 			name = "ytdlp-guiTests";
+			packageProductDependencies = (
+			);
 			productName = "ytdlp-guiTests";
 			productReference = A38A0228F9B622443CA26243 /* ytdlp-guiTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		81F0A41EE6D49D88845173E6 /* ytdlp-gui Widget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 15CFD8F74F8DB726CB632F1D /* Build configuration list for PBXNativeTarget "ytdlp-gui Widget" */;
+			buildPhases = (
+				6BEA61401BF69849B173C0DA /* Sources */,
+				6A8211F840A5527F416F837A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "ytdlp-gui Widget";
+			packageProductDependencies = (
+			);
+			productName = "ytdlp-gui Widget";
+			productReference = 3BB068D17EF929B3474D83E9 /* ytdlp-gui Widget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -330,6 +404,9 @@
 					3D040CADF5C1ED3FFA9FE071 = {
 						ProvisioningStyle = Automatic;
 					};
+					81F0A41EE6D49D88845173E6 = {
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 18029EE3E61850E5D142885A /* Build configuration list for PBXProject "ytdlp-gui" */;
@@ -343,11 +420,11 @@
 			mainGroup = 30911CA3E6EA47C8FE438133;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = D01CAA45F0B22580A8F81F67 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				3321D8FDEAD21ADFE1D45358 /* ytdlp-gui */,
+				81F0A41EE6D49D88845173E6 /* ytdlp-gui Widget */,
 				3D040CADF5C1ED3FFA9FE071 /* ytdlp-guiTests */,
 			);
 		};
@@ -362,6 +439,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		6A8211F840A5527F416F837A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0B9D7ECDB75AC658B489EFA /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -370,6 +455,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE7AC57E4C65C5FFD396E7B1 /* ytdlp_guiTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6BEA61401BF69849B173C0DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				80F9F8140BC93BA31E95DBFE /* SharedDataManager.swift in Sources */,
+				CE03B264708201CD1EAC3E59 /* WidgetData.swift in Sources */,
+				77E428D6BC3C4E38C14FA1FB /* ytdlp_guiWidget.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -403,6 +498,7 @@
 				5F7CDA64B96237AE0FA2A18E /* MetadataService.swift in Sources */,
 				4ABCB227532C624196ADABC3 /* ModernDesign.swift in Sources */,
 				4C300C3F0AE1B33186FAB400 /* NewDownloadView.swift in Sources */,
+				FFADD63DA147F0D4CB3B20E0 /* NovaAPIServer.swift in Sources */,
 				F45B00AD107991B388050262 /* OptionsView.swift in Sources */,
 				145AEC02C4E095F2DA967869 /* OutputTemplate.swift in Sources */,
 				4636036CB19A1A5832B236F7 /* OutputTemplateBuilderView.swift in Sources */,
@@ -428,10 +524,11 @@
 				55B347C1FBBA8C837CE0BB7D /* StealthView.swift in Sources */,
 				BF1FC05213C2BE969AE1485F /* SubscriptionManager.swift in Sources */,
 				AC05F2B4F0E38F70A2CCDF65 /* SubscriptionView.swift in Sources */,
+				42D24947C1F469F7C6008F29 /* WidgetData.swift in Sources */,
+				FE86B2A8A5FAE777817978D8 /* WidgetDataSync.swift in Sources */,
 				1EDE89498267E72212B0959F /* YTDLPOptions.swift in Sources */,
 				107490B147DB25A5DBACD68F /* YTDLPService.swift in Sources */,
 				262DC218ADFBDBAD87A12EC3 /* ytdlp_guiApp.swift in Sources */,
-				37F421D53382280E9840A283 /* NovaAPIServer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -442,6 +539,11 @@
 			isa = PBXTargetDependency;
 			target = 3321D8FDEAD21ADFE1D45358 /* ytdlp-gui */;
 			targetProxy = C6A4513FA00AD43403934935 /* PBXContainerItemProxy */;
+		};
+		F10D80952F3386365F1B6724 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 81F0A41EE6D49D88845173E6 /* ytdlp-gui Widget */;
+			targetProxy = 708F21FB591673A51196DFCD /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -520,8 +622,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Jordan Koch. All rights reserved.";
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.1.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.2.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -618,8 +720,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Jordan Koch. All rights reserved.";
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 1.1.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.2.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -629,6 +731,50 @@
 				SWIFT_VERSION = 5.9;
 			};
 			name = Release;
+		};
+		D1D5C06F87A97DE5154931E3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = "ytdlp-gui Widget/ytdlp_gui_Widget.entitlements";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "ytdlp-gui Widget";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Jordan Koch. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.jordankoch.ytdlp-gui.widget";
+				PRODUCT_NAME = "ytdlp-gui Widget";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		DE52E090DD6B6E3A9D2E32E6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = "ytdlp-gui Widget/ytdlp_gui_Widget.entitlements";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "ytdlp-gui Widget";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Jordan Koch. All rights reserved.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.jordankoch.ytdlp-gui.widget";
+				PRODUCT_NAME = "ytdlp-gui Widget";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
 		};
 		EACBEFF15CCF10DE89C74C53 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -655,6 +801,15 @@
 			buildConfigurations = (
 				334CE149A8CAEA9BB2D111D1 /* Debug */,
 				EACBEFF15CCF10DE89C74C53 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		15CFD8F74F8DB726CB632F1D /* Build configuration list for PBXNativeTarget "ytdlp-gui Widget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE52E090DD6B6E3A9D2E32E6 /* Debug */,
+				D1D5C06F87A97DE5154931E3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

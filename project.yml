@@ -2,16 +2,16 @@ name: ytdlp-gui
 options:
   bundleIdPrefix: com.jordankoch
   deploymentTarget:
-    macOS: "13.0"
+    macOS: "14.0"
   xcodeVersion: "15.0"
   createIntermediateGroups: true
 
 settings:
   base:
-    MARKETING_VERSION: "1.1.1"
+    MARKETING_VERSION: "1.2.0"
     CURRENT_PROJECT_VERSION: "3"
     SWIFT_VERSION: "5.9"
-    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
     CODE_SIGN_IDENTITY: "-"
     CODE_SIGN_STYLE: "Automatic"
     INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
@@ -25,6 +25,7 @@ targets:
       - path: ytdlp-gui
         excludes:
           - "Resources/Binaries/**"
+      - path: "ytdlp-gui Widget/WidgetData.swift"
     resources:
       - path: ytdlp-gui/Resources/Assets.xcassets
       - path: ytdlp-gui/Resources/UserAgents.json
@@ -46,10 +47,41 @@ targets:
         PRODUCT_NAME: "ytdlp-gui"
         INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
         CODE_SIGN_ENTITLEMENTS: "ytdlp-gui/ytdlp-gui.entitlements"
+    dependencies:
+      - target: ytdlp-gui Widget
     entitlements:
       path: ytdlp-gui/ytdlp-gui.entitlements
       properties:
         com.apple.security.app-sandbox: false
+        com.apple.security.application-groups:
+          - group.com.jordankoch.ytdlp-gui
+
+  "ytdlp-gui Widget":
+    type: app-extension
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: "ytdlp-gui Widget"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jordankoch.ytdlp-gui.widget
+        PRODUCT_NAME: "ytdlp-gui Widget"
+        CODE_SIGN_ENTITLEMENTS: "ytdlp-gui Widget/ytdlp_gui_Widget.entitlements"
+        SKIP_INSTALL: YES
+        ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME: WidgetBackground
+        INFOPLIST_KEY_CFBundleDisplayName: "ytdlp-gui Widget"
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 Jordan Koch. All rights reserved."
+        GENERATE_INFOPLIST_FILE: YES
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/../Frameworks"
+          - "@executable_path/../../../../Frameworks"
+    entitlements:
+      path: "ytdlp-gui Widget/ytdlp_gui_Widget.entitlements"
+      properties:
+        com.apple.security.app-sandbox: false
+        com.apple.security.application-groups:
+          - group.com.jordankoch.ytdlp-gui
 
   ytdlp-guiTests:
     type: bundle.unit-test
