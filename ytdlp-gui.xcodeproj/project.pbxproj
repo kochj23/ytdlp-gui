@@ -410,7 +410,6 @@
 				};
 			};
 			buildConfigurationList = 18029EE3E61850E5D142885A /* Build configuration list for PBXProject "ytdlp-gui" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -420,6 +419,7 @@
 			mainGroup = 30911CA3E6EA47C8FE438133;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
+			productRefGroup = D01CAA45F0B22580A8F81F67 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (

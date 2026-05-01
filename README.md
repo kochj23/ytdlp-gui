@@ -287,7 +287,113 @@ The stealth system helps avoid rate limiting and detection:
 - **XcodeGen** for project generation (`project.yml`)
 - No sandbox — direct file system access for maximum functionality
 
+```mermaid
+graph TB
+    subgraph UI["SwiftUI Views"]
+        CV[ContentView]
+        NV[NewDownloadView]
+        QV[QueueView]
+        LV[LibraryView]
+        SV[SettingsView]
+        FV[FormatSelectorView]
+        PV[PresetsView]
+        TV[StealthView]
+        SBV[SponsorBlockEditorView]
+        CMV[ClipboardMonitorView]
+        BV[BinaryManagerView]
+        OTV[OutputTemplateBuilderView]
+    end
+
+    subgraph Services["Service Layer"]
+        DM[DownloadManager<br/>Queue + Concurrency]
+        YS[YTDLPService<br/>Process Execution]
+        SM[StealthManager<br/>Anti-Detection]
+        BM[BinaryManager<br/>yt-dlp + ffmpeg]
+        CM[ClipboardMonitor<br/>URL Detection]
+        SBS[SponsorBlockService<br/>Segment API]
+        PDM[PostDownloadManager<br/>Action Pipeline]
+        SCH[ScheduleManager<br/>Timed Downloads]
+        SUB[SubscriptionManager<br/>Channel Feeds]
+        SL[SpeedLimiter<br/>Rate Control]
+        DS[DataStore<br/>JSON Persistence]
+        MS[MetadataService<br/>Video Info]
+    end
+
+    subgraph Models["Data Models"]
+        DI[DownloadItem]
+        DP[DownloadPreset]
+        YO[YTDLPOptions<br/>~160 flags]
+        SP[StealthProfile]
+        LI[LibraryItem]
+        AS[AppSettings]
+        OT[OutputTemplate]
+        PDA[PostDownloadAction]
+    end
+
+    subgraph External["External"]
+        YTDLP[yt-dlp CLI]
+        FFMPEG[ffmpeg]
+        SBAPI[SponsorBlock API]
+        NOVA[Nova API :37445]
+    end
+
+    CV --> NV & QV & LV & SV & PV & TV
+    NV --> FV & OTV
+    NV --> DM
+    QV --> DM
+    DM --> YS
+    DM --> SM
+    DM --> SL
+    DM --> PDM
+    YS --> YTDLP
+    YS --> BM
+    BM --> YTDLP & FFMPEG
+    SBS --> SBAPI
+    CM --> DM
+    DS --> LI & DP & AS & SP
+    PDM --> FFMPEG
+    DM --> DS
+    YS -.->|progress parsing| DI
+    SM -.->|user agents, proxies| YO
+    DI --> YO
+```
+
+## Test Suite
+
+**209 tests** across 30 test classes, covering unit, functional, security, and integration layers.
+
+| Category | Tests | What's Covered |
+|----------|-------|----------------|
+| **Unit: Options** | 24 | `YTDLPOptions.toArguments()` for all 17 flag categories, Codable round-trip, equality |
+| **Unit: Progress** | 9 | Regex extraction of percentage, speed, ETA, total size from yt-dlp output lines |
+| **Unit: Byte Parsing** | 8 | GiB/MiB/KiB/GB/MB/KB/B size string parsing |
+| **Unit: Time Parsing** | 4 | HH:MM:SS and MM:SS time string conversion |
+| **Unit: YouTube ID** | 9 | Video ID extraction from watch, youtu.be, shorts URLs with params/anchors |
+| **Unit: URL Detection** | 21 | Clipboard URL pattern matching for 19 supported sites |
+| **Unit: Models** | 56 | DownloadItem, DownloadProgress, DownloadPreset, LibraryItem, FormatInfo, PostDownloadAction, SponsorBlockSegment, AppSettings, StealthProfile, CookieSource, OutputTemplate |
+| **Unit: Metadata** | 7 | MediaMetadata/PlaylistInfo JSON decoding, FormatInfo codec/resolution display |
+| **Unit: Enums** | 6 | AudioFormat, MergeOutputFormat, SubtitleFormat, Impersonate, SponsorBlock, Fixup coverage |
+| **Unit: Error** | 11 | YTDLPError descriptions, equality, HTTP 429/403 detection patterns |
+| **Functional: Stealth** | 5 | User agent pool rotation without repeats, pool exhaustion reset, agent uniqueness |
+| **Functional: Speed** | 6 | SpeedLimiter formatting, presets |
+| **Security: Injection** | 6 | Shell metacharacter safety in arguments, proxy/UA injection resistance, direct script execution |
+| **Security: Filenames** | 3 | --restrict-filenames, --windows-filenames, --trim-filenames options |
+| **Security: URL** | 2 | SponsorBlock API percent-encoding, notification domain-only display |
+| **Security: Creds** | 2 | No hardcoded passwords in options, public API base verification |
+| **Integration: Binary** | 4 | yt-dlp, ffmpeg, ffprobe binary availability, Application Support directory |
+
+Run tests:
+```bash
+xcodebuild test -project ytdlp-gui.xcodeproj -scheme ytdlp-gui \
+  -destination 'platform=macOS' -only-testing:ytdlp-guiTests \
+  CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+```
+
 ## Changelog
+
+### v1.2.0 (2026-04-15)
+- **Feature:** macOS WidgetKit extension (Small/Medium/Large sizes)
+- **Test:** Comprehensive test suite with 209 tests across security, unit, functional, and integration layers
 
 ### v1.1.1 (2026-03-05)
 - **Security:** Fixed command injection vulnerability in shell script post-download action
