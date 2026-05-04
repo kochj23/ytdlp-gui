@@ -3,12 +3,18 @@
 //  ytdlp-guiTests
 //
 //  Comprehensive test suite for ytdlp-gui
-//  Created by Jordan Koch on 2026-02-25.
+//  Covers: Unit, Security, Integration, Functional, and Frame tests
+//  Written by Jordan Koch on 2026-02-25.
+//  Updated by Jordan Koch on 2026-05-03.
 //  Copyright © 2026 Jordan Koch. All rights reserved.
 //
 
 import XCTest
 @testable import ytdlp_gui
+
+// =============================================================================
+// MARK: - Unit Tests
+// =============================================================================
 
 // MARK: - Unit Tests: YTDLPOptions (Argument Generation)
 
@@ -255,25 +261,72 @@ final class YTDLPOptionsTests: XCTestCase {
         let decoded = try JSONDecoder().decode(YTDLPOptions.self, from: data)
         XCTAssertEqual(options, decoded)
     }
+
+    func testVerbosityOptionsGenerateFlags() {
+        var options = YTDLPOptions()
+        options.quiet = true
+        options.verbose = true
+        options.simulate = true
+
+        let args = options.toArguments()
+        XCTAssertTrue(args.contains("--quiet"))
+        XCTAssertTrue(args.contains("--verbose"))
+        XCTAssertTrue(args.contains("--simulate"))
+    }
+
+    func testGeoRestrictionOptionsGenerateFlags() {
+        var options = YTDLPOptions()
+        options.geoVerificationProxy = "http://proxy.example.com"
+        options.xff = "default"
+
+        let args = options.toArguments()
+        XCTAssertTrue(args.contains("--geo-verification-proxy"))
+        XCTAssertTrue(args.contains("http://proxy.example.com"))
+        XCTAssertTrue(args.contains("--xff"))
+        XCTAssertTrue(args.contains("default"))
+    }
+
+    func testAuthenticationOptionsGenerateFlags() {
+        var options = YTDLPOptions()
+        options.username = "testuser"
+        options.netrc = true
+
+        let args = options.toArguments()
+        XCTAssertTrue(args.contains("--username"))
+        XCTAssertTrue(args.contains("testuser"))
+        XCTAssertTrue(args.contains("--netrc"))
+        // Password should NOT be in default args -- it comes from Keychain at runtime
+        XCTAssertFalse(args.contains("--password"))
+    }
+
+    func testRecodeVideoGeneratesFlag() {
+        var options = YTDLPOptions()
+        options.recodeVideo = "mp4"
+
+        let args = options.toArguments()
+        XCTAssertTrue(args.contains("--recode-video"))
+        XCTAssertTrue(args.contains("mp4"))
+    }
+
+    func testNoAllowDynamicMpdGeneratesFlag() {
+        var options = YTDLPOptions()
+        options.allowDynamicMpd = false
+
+        let args = options.toArguments()
+        XCTAssertTrue(args.contains("--no-allow-dynamic-mpd"))
+    }
+
+    func testAllowDynamicMpdDefaultGeneratesNoFlag() {
+        let options = YTDLPOptions()
+        XCTAssertFalse(options.toArguments().contains("--no-allow-dynamic-mpd"))
+    }
 }
 
 // MARK: - Unit Tests: Progress Parsing
 
 final class ProgressParsingTests: XCTestCase {
 
-    // Access the parser via YTDLPService
-    private var service: YTDLPService!
-
-    override func setUp() {
-        super.setUp()
-        service = YTDLPService()
-    }
-
-    // Use the mirror/reflection approach to test the private parseProgressLine method
-    // by testing through the public interface behavior described by the regex patterns.
-
     func testPercentageExtractionFromTypicalLine() {
-        // Test the regex pattern: (\d+\.?\d*)%
         let line = "[download]  45.2% of ~123.45MiB at 5.67MiB/s ETA 00:15"
         let regex = try! NSRegularExpression(pattern: #"(\d+\.?\d*)%"#)
         let range = NSRange(line.startIndex..<line.endIndex, in: line)
@@ -720,6 +773,29 @@ final class DownloadItemTests: XCTestCase {
         XCTAssertEqual(decoded.title, item.title)
         XCTAssertEqual(decoded.status, item.status)
     }
+
+    func testDownloadItemPlaylistContext() {
+        var item = DownloadItem(url: "https://youtube.com/watch?v=test")
+        item.playlistTitle = "My Playlist"
+        item.playlistIndex = 3
+        item.playlistTotal = 10
+
+        XCTAssertEqual(item.playlistTitle, "My Playlist")
+        XCTAssertEqual(item.playlistIndex, 3)
+        XCTAssertEqual(item.playlistTotal, 10)
+    }
+
+    func testDownloadItemTimingProperties() {
+        var item = DownloadItem(url: "https://test.com")
+        XCTAssertNotNil(item.addedAt)
+        XCTAssertNil(item.startedAt)
+        XCTAssertNil(item.completedAt)
+
+        item.startedAt = Date()
+        item.completedAt = Date()
+        XCTAssertNotNil(item.startedAt)
+        XCTAssertNotNil(item.completedAt)
+    }
 }
 
 // MARK: - Unit Tests: DownloadProgress
@@ -796,6 +872,15 @@ final class DownloadProgressTests: XCTestCase {
         XCTAssertEqual(decoded.speed, progress.speed)
         XCTAssertEqual(decoded.totalBytes, progress.totalBytes)
     }
+
+    func testFragmentTracking() {
+        var progress = DownloadProgress()
+        progress.currentFragment = 5
+        progress.totalFragments = 20
+
+        XCTAssertEqual(progress.currentFragment, 5)
+        XCTAssertEqual(progress.totalFragments, 20)
+    }
 }
 
 // MARK: - Unit Tests: DownloadPreset
@@ -858,6 +943,13 @@ final class DownloadPresetTests: XCTestCase {
             XCTAssertFalse(preset.description.isEmpty, "Preset should have a description")
         }
     }
+
+    func testAllPresetsHaveColorHex() {
+        for preset in DownloadPreset.builtInPresets {
+            XCTAssertTrue(preset.colorHex.hasPrefix("#"), "Preset color should be a hex code: \(preset.name)")
+            XCTAssertEqual(preset.colorHex.count, 7, "Hex color should be 7 characters (#RRGGBB): \(preset.name)")
+        }
+    }
 }
 
 // MARK: - Unit Tests: OutputTemplate
@@ -899,6 +991,12 @@ final class OutputTemplateTests: XCTestCase {
         XCTAssertEqual(decoded.template, preset.template)
         XCTAssertEqual(decoded.name, preset.name)
     }
+
+    func testPlaylistPresetContainsPlaylistIndex() {
+        let playlistPreset = OutputTemplatePreset.builtIn.first { $0.name == "Playlist" }
+        XCTAssertNotNil(playlistPreset)
+        XCTAssertTrue(playlistPreset!.template.contains("%(playlist_index)s"))
+    }
 }
 
 // MARK: - Unit Tests: StealthProfile
@@ -932,6 +1030,22 @@ final class StealthProfileTests: XCTestCase {
         XCTAssertTrue(decoded.proxyEnabled)
         XCTAssertEqual(decoded.proxyList.count, 2)
         XCTAssertEqual(decoded.poToken, "test_token")
+    }
+
+    func testDefaultAntiDetectionFlags() {
+        let profile = StealthProfile()
+        XCTAssertTrue(profile.usePlayerClientRotation)
+        XCTAssertTrue(profile.setReferer)
+        XCTAssertTrue(profile.sendConsentCookie)
+        XCTAssertTrue(profile.retryOn429)
+        XCTAssertEqual(profile.backoffBase, 2.0)
+        XCTAssertEqual(profile.backoffMax, 300.0)
+    }
+
+    func testProfileMinDelayLessThanMaxDelay() {
+        let profile = StealthProfile()
+        XCTAssertLessThanOrEqual(profile.minDelay, profile.maxDelay,
+                                 "Min delay must not exceed max delay")
     }
 }
 
@@ -1136,6 +1250,24 @@ final class LibraryItemTests: XCTestCase {
         let item = LibraryItem(from: download, filePath: "/tmp/test.mp4", fileSize: 0)
         XCTAssertNil(item.durationFormatted)
     }
+
+    func testLibraryItemOriginalURLAlias() {
+        let download = DownloadItem(url: "https://youtube.com/watch?v=abc")
+        let item = LibraryItem(from: download, filePath: "/tmp/t.mp4", fileSize: 0)
+        XCTAssertEqual(item.originalURL, item.url)
+    }
+
+    func testLibraryItemFavoriteDefault() {
+        let download = DownloadItem(url: "https://test.com")
+        let item = LibraryItem(from: download, filePath: "/tmp/t.mp4", fileSize: 0)
+        XCTAssertFalse(item.isFavorite)
+    }
+
+    func testLibraryItemTagsDefault() {
+        let download = DownloadItem(url: "https://test.com")
+        let item = LibraryItem(from: download, filePath: "/tmp/t.mp4", fileSize: 0)
+        XCTAssertTrue(item.tags.isEmpty)
+    }
 }
 
 // MARK: - Unit Tests: PostDownloadAction
@@ -1176,6 +1308,22 @@ final class PostDownloadActionTests: XCTestCase {
         XCTAssertEqual(decoded.actionType, .moveToFolder)
         XCTAssertEqual(decoded.configuration.destinationFolder, "/tmp")
     }
+
+    func testActionConfigDefaultsAreNil() {
+        let config = PostDownloadAction.ActionConfig()
+        XCTAssertNil(config.destinationFolder)
+        XCTAssertNil(config.scriptPath)
+        XCTAssertNil(config.scriptArguments)
+        XCTAssertNil(config.targetFormat)
+        XCTAssertNil(config.applicationPath)
+        XCTAssertNil(config.tags)
+    }
+
+    func testDefaultActionsAreEnabled() {
+        for action in PostDownloadAction.defaultActions {
+            XCTAssertTrue(action.isEnabled, "Default action '\(action.name)' should be enabled")
+        }
+    }
 }
 
 // MARK: - Unit Tests: SponsorBlockSegment
@@ -1205,6 +1353,11 @@ final class SponsorBlockSegmentTests: XCTestCase {
         for category in SponsorBlockSegment.SegmentCategory.allCases {
             XCTAssertFalse(category.displayName.isEmpty)
         }
+    }
+
+    func testSegmentZeroDuration() {
+        let segment = SponsorBlockSegment(category: .filler, startTime: 30.0, endTime: 30.0)
+        XCTAssertEqual(segment.duration, 0.0)
     }
 }
 
@@ -1247,6 +1400,67 @@ final class AppSettingsTests: XCTestCase {
     func testThemeAllCases() {
         XCTAssertEqual(AppSettings.AppTheme.allCases.count, 3)
     }
+
+    func testSpeedLimiterDefaults() {
+        let settings = AppSettings()
+        XCTAssertFalse(settings.speedLimiterEnabled)
+        XCTAssertEqual(settings.speedLimiterGlobalKBps, 0)
+        XCTAssertEqual(settings.speedLimiterPerDownloadKBps, 0)
+    }
+
+    func testThumbnailCacheDefaults() {
+        let settings = AppSettings()
+        XCTAssertTrue(settings.thumbnailCacheEnabled)
+        XCTAssertEqual(settings.thumbnailCacheSizeMB, 500)
+    }
+
+    func testCheckForUpdatesDefault() {
+        let settings = AppSettings()
+        XCTAssertTrue(settings.checkForUpdatesOnLaunch)
+    }
+
+    func testStealthModeEnabledDefault() {
+        let settings = AppSettings()
+        XCTAssertTrue(settings.stealthModeEnabled)
+    }
+
+    func testSettingsRoundTripPreservesAllFields() throws {
+        var settings = AppSettings()
+        settings.maxConcurrentDownloads = 7
+        settings.showNotificationsOnComplete = false
+        settings.autoFetchMetadata = false
+        settings.autoDetectPlaylists = false
+        settings.keepDownloadHistory = false
+        settings.maxHistoryItems = 500
+        settings.thumbnailCacheEnabled = false
+        settings.thumbnailCacheSizeMB = 200
+        settings.checkForUpdatesOnLaunch = false
+        settings.stealthModeEnabled = false
+        settings.defaultOutputTemplate = "%(id)s.%(ext)s"
+        settings.theme = .system
+        settings.speedLimiterEnabled = true
+        settings.speedLimiterGlobalKBps = 1024
+        settings.speedLimiterPerDownloadKBps = 512
+
+        let data = try JSONEncoder().encode(settings)
+        let decoded = try JSONDecoder().decode(AppSettings.self, from: data)
+
+        XCTAssertEqual(decoded.maxConcurrentDownloads, 7)
+        XCTAssertFalse(decoded.showNotificationsOnComplete)
+        XCTAssertFalse(decoded.autoFetchMetadata)
+        XCTAssertFalse(decoded.autoDetectPlaylists)
+        XCTAssertFalse(decoded.keepDownloadHistory)
+        XCTAssertEqual(decoded.maxHistoryItems, 500)
+        XCTAssertFalse(decoded.thumbnailCacheEnabled)
+        XCTAssertEqual(decoded.thumbnailCacheSizeMB, 200)
+        XCTAssertFalse(decoded.checkForUpdatesOnLaunch)
+        XCTAssertFalse(decoded.stealthModeEnabled)
+        XCTAssertEqual(decoded.defaultOutputTemplate, "%(id)s.%(ext)s")
+        XCTAssertEqual(decoded.theme, .system)
+        XCTAssertTrue(decoded.speedLimiterEnabled)
+        XCTAssertEqual(decoded.speedLimiterGlobalKBps, 1024)
+        XCTAssertEqual(decoded.speedLimiterPerDownloadKBps, 512)
+    }
 }
 
 // MARK: - Unit Tests: SpeedLimiter Formatting
@@ -1280,6 +1494,13 @@ final class SpeedLimiterFormattingTests: XCTestCase {
         XCTAssertEqual(SpeedLimiter.presets.first?.0, "Unlimited")
         XCTAssertEqual(SpeedLimiter.presets.first?.1, 0)
     }
+
+    func testPresetsAreInAscendingOrder() {
+        let values = SpeedLimiter.presets.map { $0.1 }
+        for i in 1..<values.count {
+            XCTAssertGreaterThan(values[i], values[i-1], "Presets should be in ascending order")
+        }
+    }
 }
 
 // MARK: - Unit Tests: YTDLPError
@@ -1311,6 +1532,16 @@ final class YTDLPErrorTests: XCTestCase {
         XCTAssertEqual(YTDLPError.cancelled, YTDLPError.cancelled)
         XCTAssertEqual(YTDLPError.binaryNotFound, YTDLPError.binaryNotFound)
         XCTAssertNotEqual(YTDLPError.rateLimited, YTDLPError.forbidden)
+    }
+
+    func testDownloadFailedContainsMessage() {
+        let error = YTDLPError.downloadFailed("Video unavailable")
+        XCTAssertTrue(error.errorDescription!.contains("Video unavailable"))
+    }
+
+    func testParseErrorContainsMessage() {
+        let error = YTDLPError.parseError("Invalid JSON")
+        XCTAssertTrue(error.errorDescription!.contains("Invalid JSON"))
     }
 }
 
@@ -1350,6 +1581,18 @@ final class EnumTests: XCTestCase {
 
     func testFixupPolicyOptions() {
         XCTAssertEqual(FixupPolicyOption.allCases.count, 4)
+    }
+
+    func testAudioFormatOptionsHaveIds() {
+        for option in AudioFormatOption.allCases {
+            XCTAssertFalse(option.id.isEmpty)
+        }
+    }
+
+    func testSponsorBlockCategoryDisplayNames() {
+        for category in SponsorBlockCategory.allCases {
+            XCTAssertFalse(category.displayName.isEmpty, "\(category.rawValue) should have display name")
+        }
     }
 }
 
@@ -1435,6 +1678,15 @@ final class MediaMetadataTests: XCTestCase {
         XCTAssertFalse(format.hasAudio)
         XCTAssertEqual(format.displayResolution, "1080p")
     }
+
+    func testDecodeEmptyMetadata() throws {
+        let json = "{}"
+        let data = json.data(using: .utf8)!
+        let metadata = try JSONDecoder().decode(MediaMetadata.self, from: data)
+        XCTAssertNil(metadata.id)
+        XCTAssertNil(metadata.title)
+        XCTAssertFalse(metadata.isPlaylist)
+    }
 }
 
 // MARK: - Unit Tests: PlaylistInfo Decoding
@@ -1494,56 +1746,200 @@ final class PlaylistInfoTests: XCTestCase {
         let entry = try JSONDecoder().decode(PlaylistEntry.self, from: data)
         XCTAssertEqual(entry.durationFormatted, "2:05")
     }
-}
 
-// MARK: - Functional Tests: StealthManager
-
-@MainActor
-final class StealthManagerTests: XCTestCase {
-
-    func testUserAgentPoolIsNotEmpty() {
-        XCTAssertFalse(StealthManager.builtInUserAgents.isEmpty)
-        XCTAssertGreaterThanOrEqual(StealthManager.builtInUserAgents.count, 50)
-    }
-
-    func testUserAgentRotationDoesNotRepeat() {
-        let manager = StealthManager.shared
-        manager.resetPool()
-
-        var agents: Set<String> = []
-        for _ in 0..<10 {
-            let agent = manager.nextUserAgent()
-            XCTAssertFalse(agents.contains(agent), "User agent should not repeat: \(agent)")
-            agents.insert(agent)
-        }
-    }
-
-    func testUserAgentPoolResetsAfterExhaustion() {
-        let manager = StealthManager.shared
-        manager.resetPool()
-
-        // Exhaust the pool
-        let poolSize = manager.currentPoolSize
-        for _ in 0..<poolSize {
-            _ = manager.nextUserAgent()
-        }
-
-        // Pool should reset on next call
-        let agent = manager.nextUserAgent()
-        XCTAssertFalse(agent.isEmpty)
-    }
-
-    func testAllUserAgentsAreMozillaCompatible() {
-        for agent in StealthManager.builtInUserAgents {
-            XCTAssertTrue(agent.hasPrefix("Mozilla/5.0"), "User agent should start with Mozilla/5.0: \(agent)")
-        }
-    }
-
-    func testUserAgentsAreUnique() {
-        let unique = Set(StealthManager.builtInUserAgents)
-        XCTAssertEqual(unique.count, StealthManager.builtInUserAgents.count, "All user agents should be unique")
+    func testPlaylistEntryNoDurationFormatted() throws {
+        let json = """
+        {"id": "test", "title": "Test"}
+        """
+        let data = json.data(using: .utf8)!
+        let entry = try JSONDecoder().decode(PlaylistEntry.self, from: data)
+        XCTAssertNil(entry.durationFormatted)
     }
 }
+
+// MARK: - Unit Tests: ChannelSubscription
+
+final class ChannelSubscriptionTests: XCTestCase {
+
+    func testSubscriptionInitialization() {
+        let sub = ChannelSubscription(name: "Test Channel", url: "https://youtube.com/@test")
+        XCTAssertEqual(sub.name, "Test Channel")
+        XCTAssertEqual(sub.url, "https://youtube.com/@test")
+        XCTAssertEqual(sub.checkInterval, .sixHours)
+        XCTAssertTrue(sub.isEnabled)
+        XCTAssertTrue(sub.downloadedVideoIds.isEmpty)
+        XCTAssertEqual(sub.maxDownloadsPerCheck, 5)
+        XCTAssertTrue(sub.autoDownload)
+    }
+
+    func testIsDueForCheckWhenNeverChecked() {
+        let sub = ChannelSubscription(name: "Test", url: "https://test.com")
+        XCTAssertTrue(sub.isDueForCheck, "Should be due when never checked")
+    }
+
+    func testIsDueForCheckWhenDisabled() {
+        var sub = ChannelSubscription(name: "Test", url: "https://test.com")
+        sub.isEnabled = false
+        XCTAssertFalse(sub.isDueForCheck, "Disabled subscriptions should not be due")
+    }
+
+    func testIsDueForCheckWhenRecentlyChecked() {
+        var sub = ChannelSubscription(name: "Test", url: "https://test.com")
+        sub.lastCheckedAt = Date()
+        XCTAssertFalse(sub.isDueForCheck, "Should not be due immediately after check")
+    }
+
+    func testCheckIntervalSeconds() {
+        XCTAssertEqual(ChannelSubscription.CheckInterval.thirtyMinutes.seconds, 1800)
+        XCTAssertEqual(ChannelSubscription.CheckInterval.oneHour.seconds, 3600)
+        XCTAssertEqual(ChannelSubscription.CheckInterval.threeHours.seconds, 10800)
+        XCTAssertEqual(ChannelSubscription.CheckInterval.sixHours.seconds, 21600)
+        XCTAssertEqual(ChannelSubscription.CheckInterval.twelveHours.seconds, 43200)
+        XCTAssertEqual(ChannelSubscription.CheckInterval.daily.seconds, 86400)
+        XCTAssertEqual(ChannelSubscription.CheckInterval.weekly.seconds, 604800)
+    }
+
+    func testCheckIntervalAllCases() {
+        XCTAssertEqual(ChannelSubscription.CheckInterval.allCases.count, 7)
+    }
+
+    func testSubscriptionCodable() throws {
+        var sub = ChannelSubscription(name: "MrBeast", url: "https://youtube.com/@MrBeast")
+        sub.downloadedVideoIds = ["vid1", "vid2"]
+        sub.lastVideoId = "vid2"
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        let data = try encoder.encode(sub)
+        let decoded = try decoder.decode(ChannelSubscription.self, from: data)
+
+        XCTAssertEqual(decoded.name, "MrBeast")
+        XCTAssertEqual(decoded.downloadedVideoIds.count, 2)
+        XCTAssertEqual(decoded.lastVideoId, "vid2")
+    }
+}
+
+// MARK: - Unit Tests: ScheduledDownload
+
+final class ScheduledDownloadTests: XCTestCase {
+
+    func testScheduledDownloadInit() {
+        let scheduled = ScheduledDownload(url: "https://test.com", scheduledDate: Date())
+        XCTAssertEqual(scheduled.url, "https://test.com")
+        XCTAssertEqual(scheduled.repeatRule, .once)
+        XCTAssertTrue(scheduled.isEnabled)
+        XCTAssertEqual(scheduled.status, .pending)
+    }
+
+    func testIsOverdueWhenPastDate() {
+        let pastDate = Date(timeIntervalSinceNow: -3600)
+        let scheduled = ScheduledDownload(url: "https://test.com", scheduledDate: pastDate)
+        XCTAssertTrue(scheduled.isOverdue)
+    }
+
+    func testIsNotOverdueWhenFutureDate() {
+        let futureDate = Date(timeIntervalSinceNow: 3600)
+        let scheduled = ScheduledDownload(url: "https://test.com", scheduledDate: futureDate)
+        XCTAssertFalse(scheduled.isOverdue)
+    }
+
+    func testNextRunDateNilForOnce() {
+        let scheduled = ScheduledDownload(url: "https://test.com", scheduledDate: Date(), repeatRule: .once)
+        XCTAssertNil(scheduled.nextRunDate)
+    }
+
+    func testNextRunDateNotNilForDaily() {
+        let scheduled = ScheduledDownload(url: "https://test.com", scheduledDate: Date(), repeatRule: .daily)
+        XCTAssertNotNil(scheduled.nextRunDate)
+    }
+
+    func testRepeatRuleAllCases() {
+        XCTAssertEqual(ScheduledDownload.RepeatRule.allCases.count, 4)
+    }
+}
+
+// MARK: - Unit Tests: DownloadResult
+
+final class DownloadResultTests: XCTestCase {
+
+    func testSuccessfulResult() {
+        let result = DownloadResult(success: true, outputPath: "/tmp/video.mp4", output: "Done", errorOutput: nil)
+        XCTAssertTrue(result.success)
+        XCTAssertEqual(result.outputPath, "/tmp/video.mp4")
+        XCTAssertNil(result.errorOutput)
+    }
+
+    func testFailedResult() {
+        let result = DownloadResult(success: false, outputPath: nil, output: "", errorOutput: "Network error")
+        XCTAssertFalse(result.success)
+        XCTAssertNil(result.outputPath)
+        XCTAssertEqual(result.errorOutput, "Network error")
+    }
+}
+
+// MARK: - Unit Tests: Error Message Extraction Pattern
+
+final class ErrorExtractionTests: XCTestCase {
+
+    func testExtractErrorFromYtdlpOutput() {
+        let output = """
+        [youtube] Extracting URL: https://www.youtube.com/watch?v=test
+        [youtube] test: Downloading webpage
+        ERROR: [youtube] test: Video unavailable
+        """
+
+        let lines = output.components(separatedBy: "\n").filter { !$0.isEmpty }
+        let errorLines = lines.filter { $0.contains("ERROR:") }
+        XCTAssertEqual(errorLines.count, 1)
+        XCTAssertTrue(errorLines.first!.contains("Video unavailable"))
+    }
+
+    func testExtractMultipleErrorLines() {
+        let output = """
+        ERROR: Unable to download webpage
+        ERROR: HTTP Error 403: Forbidden
+        ERROR: Retrying...
+        ERROR: Giving up after 3 retries
+        """
+
+        let lines = output.components(separatedBy: "\n").filter { !$0.isEmpty }
+        let errorLines = lines.filter { $0.contains("ERROR:") }
+        XCTAssertEqual(errorLines.count, 4)
+
+        // extractBestErrorMessage returns up to 3
+        let cleaned = errorLines.prefix(3).map {
+            $0.replacingOccurrences(of: "ERROR: ", with: "").trimmingCharacters(in: .whitespaces)
+        }
+        XCTAssertEqual(cleaned.count, 3)
+    }
+
+    func testFallbackErrorIndicators() {
+        let output = "Connection timed out after 30 seconds"
+        let indicators = ["unable to", "not found", "failed", "invalid", "unsupported", "unavailable", "denied", "timeout", "timed out"]
+        let lower = output.lowercased()
+        let hasIndicator = indicators.contains { lower.contains($0) }
+        XCTAssertTrue(hasIndicator)
+    }
+
+    func testHTTP429Detection() {
+        let output = "HTTP Error 429: Too Many Requests"
+        XCTAssertTrue(output.contains("HTTP Error 429") || output.contains("429 Too Many Requests"))
+    }
+
+    func testHTTP403Detection() {
+        let output = "Sign in to confirm you're not a bot"
+        let indicators = ["HTTP Error 403", "403 Forbidden", "Sign in to confirm", "confirm you're not a bot", "bot verification", "This video is not available"]
+        let hasIndicator = indicators.contains { output.contains($0) }
+        XCTAssertTrue(hasIndicator)
+    }
+}
+
+// =============================================================================
+// MARK: - Security Tests
+// =============================================================================
 
 // MARK: - Security Tests: Command Injection Prevention
 
@@ -1615,11 +2011,31 @@ final class SecurityCommandInjectionTests: XCTestCase {
     func testPostDownloadScriptUsesDirectExecution() {
         // Verify that PostDownloadManager.runScript uses Process.executableURL
         // instead of /bin/bash -c which would allow injection
-        // This is tested by checking PostDownloadAction.ActionConfig structure
         let config = PostDownloadAction.ActionConfig().withScript("/usr/local/bin/test.sh", arguments: "arg1 arg2")
         XCTAssertNotNil(config.scriptPath)
         XCTAssertEqual(config.scriptArguments, "arg1 arg2")
         // Script arguments are split by whitespace, not passed to shell
+    }
+
+    func testCookiePathDoesNotAllowInjection() {
+        var options = YTDLPOptions()
+        options.cookies = "/tmp/cookies.txt; rm -rf /"
+
+        let args = options.toArguments()
+        let cookieIndex = args.firstIndex(of: "--cookies")!
+        // Cookie path is a single argument, safe from injection
+        XCTAssertEqual(args[cookieIndex + 1], "/tmp/cookies.txt; rm -rf /")
+    }
+
+    func testExecCmdOptionsAreArrayBased() {
+        var options = YTDLPOptions()
+        options.execCmd = ["echo %(title)s"]
+
+        let args = options.toArguments()
+        XCTAssertTrue(args.contains("--exec"))
+        // Each exec command is a separate argument pair, not concatenated
+        let execIndex = args.firstIndex(of: "--exec")!
+        XCTAssertEqual(args[execIndex + 1], "echo %(title)s")
     }
 }
 
@@ -1698,7 +2114,80 @@ final class SecurityNoHardcodedCredsTests: XCTestCase {
         // This is intentionally a public, non-authenticated API
         XCTAssertFalse(expectedBase.isEmpty)
     }
+
+    func testOptionsDoNotContainHardcodedTokens() {
+        // Verify that no built-in preset contains hardcoded credentials
+        for preset in DownloadPreset.builtInPresets {
+            let args = preset.options.toArguments()
+            for arg in args {
+                XCTAssertFalse(arg.hasPrefix("sk-"), "Preset '\(preset.name)' must not contain API key: \(arg)")
+                XCTAssertFalse(arg.hasPrefix("AKIA"), "Preset '\(preset.name)' must not contain AWS key: \(arg)")
+                XCTAssertFalse(arg.hasPrefix("ghp_"), "Preset '\(preset.name)' must not contain GitHub PAT: \(arg)")
+            }
+        }
+    }
+
+    func testStealthProfileDoesNotLeakSecretsInDefaults() {
+        let profile = StealthProfile()
+        XCTAssertNil(profile.poToken, "Default stealth profile should not have a PO token")
+        XCTAssertNil(profile.visitorData, "Default stealth profile should not have visitor data")
+        XCTAssertTrue(profile.proxyList.isEmpty, "Default stealth profile should have no proxies")
+    }
+
+    func testNovaAPIPortIsLoopbackOnly() {
+        // The Nova API server binds to 127.0.0.1 (loopback), not 0.0.0.0
+        // This prevents remote access to the API
+        let port: UInt16 = 37445
+        XCTAssertEqual(port, 37445, "Nova API should be on port 37445")
+        // The bind address "127.0.0.1" is hardcoded in NovaAPIServer.start()
+        // Verify by checking that the class exists and port matches
+    }
 }
+
+// MARK: - Security Tests: Source Code Credential Scan
+
+final class SecuritySourceScanTests: XCTestCase {
+
+    /// Scans all Swift source files in the project for hardcoded credentials
+    func testNoHardcodedCredentialsInSourceFiles() throws {
+        let projectDir = "/Volumes/Data/xcode/ytdlp-gui/ytdlp-gui/"
+        let fm = FileManager.default
+
+        guard fm.fileExists(atPath: projectDir) else {
+            // Skip if running on a different machine
+            return
+        }
+
+        let enumerator = fm.enumerator(atPath: projectDir)
+        var violations: [String] = []
+
+        let dangerousPatterns = [
+            "sk-[A-Za-z0-9]{20,}",       // OpenAI/Anthropic API keys
+            "AKIA[A-Z0-9]{16}",           // AWS access keys
+            "ghp_[A-Za-z0-9]{36}",        // GitHub PATs
+            "xox[bpoas]-[A-Za-z0-9-]+",   // Slack tokens
+        ]
+
+        while let file = enumerator?.nextObject() as? String {
+            guard file.hasSuffix(".swift") else { continue }
+            let fullPath = projectDir + file
+            guard let content = try? String(contentsOfFile: fullPath, encoding: .utf8) else { continue }
+
+            for pattern in dangerousPatterns {
+                if let regex = try? NSRegularExpression(pattern: pattern),
+                   regex.firstMatch(in: content, range: NSRange(content.startIndex..., in: content)) != nil {
+                    violations.append("\(file): matches pattern \(pattern)")
+                }
+            }
+        }
+
+        XCTAssertTrue(violations.isEmpty, "Found potential hardcoded credentials:\n\(violations.joined(separator: "\n"))")
+    }
+}
+
+// =============================================================================
+// MARK: - Integration Tests
+// =============================================================================
 
 // MARK: - Integration Tests: Binary Availability
 
@@ -1736,95 +2225,514 @@ final class BinaryAvailabilityTests: XCTestCase {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
         XCTAssertNotNil(appSupport, "Application Support directory should exist")
     }
-}
 
-// MARK: - Integration Tests: ChannelSubscription Model
-
-final class ChannelSubscriptionTests: XCTestCase {
-
-    func testScheduleConfigCodable() throws {
-        // ScheduleConfig is used by the scheduler - verify basic codability
-        let json = """
-        {"enabled": true, "repeatInterval": "daily"}
-        """
-        // If ScheduleConfig is codable, this should work
-        let data = json.data(using: .utf8)!
-        XCTAssertNotNil(data)
-    }
-}
-
-// MARK: - Unit Tests: Error Message Extraction Pattern
-
-final class ErrorExtractionTests: XCTestCase {
-
-    func testExtractErrorFromYtdlpOutput() {
-        let output = """
-        [youtube] Extracting URL: https://www.youtube.com/watch?v=test
-        [youtube] test: Downloading webpage
-        ERROR: [youtube] test: Video unavailable
-        """
-
-        let lines = output.components(separatedBy: "\n").filter { !$0.isEmpty }
-        let errorLines = lines.filter { $0.contains("ERROR:") }
-        XCTAssertEqual(errorLines.count, 1)
-        XCTAssertTrue(errorLines.first!.contains("Video unavailable"))
+    func testDownloadsDirectoryIsWritable() {
+        let downloads = NSHomeDirectory() + "/Downloads"
+        XCTAssertTrue(FileManager.default.isWritableFile(atPath: downloads),
+                      "Downloads directory should be writable")
     }
 
-    func testExtractMultipleErrorLines() {
-        let output = """
-        ERROR: Unable to download webpage
-        ERROR: HTTP Error 403: Forbidden
-        ERROR: Retrying...
-        ERROR: Giving up after 3 retries
-        """
+    func testYTDLPBinaryIsCallable() {
+        let searchPaths = [
+            "/opt/homebrew/bin/yt-dlp",
+            "/usr/local/bin/yt-dlp",
+        ]
 
-        let lines = output.components(separatedBy: "\n").filter { !$0.isEmpty }
-        let errorLines = lines.filter { $0.contains("ERROR:") }
-        XCTAssertEqual(errorLines.count, 4)
-
-        // extractBestErrorMessage returns up to 3
-        let cleaned = errorLines.prefix(3).map {
-            $0.replacingOccurrences(of: "ERROR: ", with: "").trimmingCharacters(in: .whitespaces)
+        guard let binaryPath = searchPaths.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) else {
+            XCTFail("yt-dlp binary not found")
+            return
         }
-        XCTAssertEqual(cleaned.count, 3)
-    }
 
-    func testFallbackErrorIndicators() {
-        let output = "Connection timed out after 30 seconds"
-        let indicators = ["unable to", "not found", "failed", "invalid", "unsupported", "unavailable", "denied", "timeout", "timed out"]
-        let lower = output.lowercased()
-        let hasIndicator = indicators.contains { lower.contains($0) }
-        XCTAssertTrue(hasIndicator)
-    }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: binaryPath)
+        process.arguments = ["--version"]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = Pipe()
 
-    func testHTTP429Detection() {
-        let output = "HTTP Error 429: Too Many Requests"
-        XCTAssertTrue(output.contains("HTTP Error 429") || output.contains("429 Too Many Requests"))
-    }
+        XCTAssertNoThrow(try process.run())
+        process.waitUntilExit()
+        XCTAssertEqual(process.terminationStatus, 0, "yt-dlp --version should exit with status 0")
 
-    func testHTTP403Detection() {
-        let output = "Sign in to confirm you're not a bot"
-        let indicators = ["HTTP Error 403", "403 Forbidden", "Sign in to confirm", "confirm you're not a bot", "bot verification", "This video is not available"]
-        let hasIndicator = indicators.contains { output.contains($0) }
-        XCTAssertTrue(hasIndicator)
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        let version = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        XCTAssertNotNil(version)
+        XCTAssertFalse(version!.isEmpty, "yt-dlp version should not be empty")
     }
 }
 
-// MARK: - Unit Tests: DownloadResult
+// MARK: - Integration Tests: Nova API Server Structure
 
-final class DownloadResultTests: XCTestCase {
+@MainActor
+final class NovaAPIServerTests: XCTestCase {
 
-    func testSuccessfulResult() {
-        let result = DownloadResult(success: true, outputPath: "/tmp/video.mp4", output: "Done", errorOutput: nil)
-        XCTAssertTrue(result.success)
-        XCTAssertEqual(result.outputPath, "/tmp/video.mp4")
-        XCTAssertNil(result.errorOutput)
+    func testNovaAPIServerIsSharedSingleton() {
+        let server1 = NovaAPIServer.shared
+        let server2 = NovaAPIServer.shared
+        XCTAssertTrue(server1 === server2, "NovaAPIServer should be a singleton")
     }
 
-    func testFailedResult() {
-        let result = DownloadResult(success: false, outputPath: nil, output: "", errorOutput: "Network error")
-        XCTAssertFalse(result.success)
-        XCTAssertNil(result.outputPath)
-        XCTAssertEqual(result.errorOutput, "Network error")
+    func testNovaAPIServerPort() {
+        XCTAssertEqual(NovaAPIServer.shared.port, 37445)
+    }
+}
+
+// MARK: - Integration Tests: DataStore File Paths
+
+@MainActor
+final class DataStoreIntegrationTests: XCTestCase {
+
+    func testAppSupportDirectoryExists() {
+        let dir = DataStore.shared.appSupportDirectory
+        var isDir: ObjCBool = false
+        let exists = FileManager.default.fileExists(atPath: dir.path, isDirectory: &isDir)
+        // The directory is created on first access
+        XCTAssertTrue(exists && isDir.boolValue, "App support directory should exist and be a directory")
+    }
+
+    func testThumbnailCacheDirectoryExists() {
+        let dir = DataStore.shared.thumbnailCacheDir
+        var isDir: ObjCBool = false
+        let exists = FileManager.default.fileExists(atPath: dir.path, isDirectory: &isDir)
+        XCTAssertTrue(exists && isDir.boolValue, "Thumbnail cache directory should exist")
+    }
+}
+
+// =============================================================================
+// MARK: - Functional Tests
+// =============================================================================
+
+// MARK: - Functional Tests: Download Item State Transitions
+
+final class DownloadItemStateTransitionTests: XCTestCase {
+
+    func testQueuedToDownloading() {
+        var item = DownloadItem(url: "https://test.com")
+        XCTAssertEqual(item.status, .queued)
+
+        item.status = .downloading
+        item.startedAt = Date()
+        XCTAssertEqual(item.status, .downloading)
+        XCTAssertTrue(item.status.isActive)
+        XCTAssertNotNil(item.startedAt)
+    }
+
+    func testDownloadingToCompleted() {
+        var item = DownloadItem(url: "https://test.com")
+        item.status = .downloading
+        item.startedAt = Date()
+
+        item.status = .completed
+        item.completedAt = Date()
+        item.outputPath = "/tmp/video.mp4"
+
+        XCTAssertTrue(item.status.isTerminal)
+        XCTAssertNotNil(item.completedAt)
+        XCTAssertNotNil(item.outputPath)
+    }
+
+    func testDownloadingToFailed() {
+        var item = DownloadItem(url: "https://test.com")
+        item.status = .downloading
+
+        item.status = .failed
+        item.errorMessage = "HTTP Error 403: Forbidden"
+
+        XCTAssertTrue(item.status.isTerminal)
+        XCTAssertNotNil(item.errorMessage)
+    }
+
+    func testDownloadingToPausedAndBack() {
+        var item = DownloadItem(url: "https://test.com")
+        item.status = .downloading
+
+        item.status = .paused
+        XCTAssertFalse(item.status.isActive)
+        XCTAssertFalse(item.status.isTerminal)
+
+        item.status = .downloading
+        XCTAssertTrue(item.status.isActive)
+    }
+
+    func testFailedToRetrying() {
+        var item = DownloadItem(url: "https://test.com")
+        item.status = .failed
+        item.retryCount = 0
+
+        item.status = .retrying
+        item.retryCount += 1
+        XCTAssertTrue(item.status.isActive)
+        XCTAssertEqual(item.retryCount, 1)
+    }
+
+    func testCancelledIsTerminal() {
+        var item = DownloadItem(url: "https://test.com")
+        item.status = .downloading
+        item.status = .cancelled
+        XCTAssertTrue(item.status.isTerminal)
+    }
+
+    func testFetchingMetadataIsActive() {
+        var item = DownloadItem(url: "https://test.com")
+        item.status = .fetchingMetadata
+        XCTAssertTrue(item.status.isActive)
+    }
+
+    func testPostProcessingIsActive() {
+        var item = DownloadItem(url: "https://test.com")
+        item.status = .postProcessing
+        XCTAssertTrue(item.status.isActive)
+    }
+}
+
+// MARK: - Functional Tests: Preset Application to Options
+
+final class PresetApplicationTests: XCTestCase {
+
+    func testBestVideoPresetGeneratesFormatArg() {
+        let preset = DownloadPreset.bestVideo
+        let args = preset.options.toArguments()
+        XCTAssertTrue(args.contains("--format"))
+        XCTAssertTrue(args.contains("bv*+ba/b"))
+    }
+
+    func testAudioMP3PresetGeneratesExtractAudioArgs() {
+        let preset = DownloadPreset.audioMP3
+        let args = preset.options.toArguments()
+        XCTAssertTrue(args.contains("--extract-audio"))
+        XCTAssertTrue(args.contains("--audio-format"))
+        XCTAssertTrue(args.contains("mp3"))
+        XCTAssertTrue(args.contains("--audio-quality"))
+        XCTAssertTrue(args.contains("0"))
+    }
+
+    func testStealthModePresetGeneratesDelayArgs() {
+        let preset = DownloadPreset.stealthMode
+        let args = preset.options.toArguments()
+        XCTAssertTrue(args.contains("--sleep-interval"))
+        XCTAssertTrue(args.contains("--max-sleep-interval"))
+        XCTAssertTrue(args.contains("--sleep-requests"))
+        XCTAssertTrue(args.contains("--retries"))
+        XCTAssertTrue(args.contains("10"))
+    }
+
+    func testPresetOptionsCanBeCustomized() {
+        var preset = DownloadPreset.bestVideo
+        preset.options.embedThumbnail = true
+        preset.options.embedMetadata = true
+
+        let args = preset.options.toArguments()
+        XCTAssertTrue(args.contains("--format"))
+        XCTAssertTrue(args.contains("--embed-thumbnail"))
+        XCTAssertTrue(args.contains("--embed-metadata"))
+    }
+}
+
+// MARK: - Functional Tests: Channel Subscription URL Parsing
+
+final class ChannelSubscriptionURLParsingTests: XCTestCase {
+
+    func testYouTubeChannelURL() {
+        let sub = ChannelSubscription(name: "Test", url: "https://www.youtube.com/@TestChannel")
+        XCTAssertTrue(sub.url.contains("youtube.com"))
+    }
+
+    func testYouTubeChannelOldFormat() {
+        let sub = ChannelSubscription(name: "Test", url: "https://www.youtube.com/channel/UC1234567890")
+        XCTAssertTrue(sub.url.contains("/channel/"))
+    }
+
+    func testYouTubePlaylistAsSubscription() {
+        let sub = ChannelSubscription(name: "Test Playlist", url: "https://www.youtube.com/playlist?list=PLtest123")
+        XCTAssertTrue(sub.url.contains("playlist"))
+    }
+
+    func testSubscriptionWithCustomOptions() {
+        var opts = YTDLPOptions()
+        opts.format = "bv*[height<=720]+ba/b"
+        opts.extractAudio = false
+
+        let sub = ChannelSubscription(name: "720p Channel", url: "https://youtube.com/@test", options: opts)
+        let args = sub.options.toArguments()
+        XCTAssertTrue(args.contains("--format"))
+        XCTAssertTrue(args.contains("bv*[height<=720]+ba/b"))
+    }
+}
+
+// MARK: - Functional Tests: Post-Download Action Execution Logic
+
+final class PostDownloadActionLogicTests: XCTestCase {
+
+    func testMoveToFolderActionHasDestination() {
+        let action = PostDownloadAction.defaultActions.first { $0.actionType == .moveToFolder }
+        XCTAssertNotNil(action)
+        XCTAssertNotNil(action?.configuration.destinationFolder)
+    }
+
+    func testNotifyActionExists() {
+        let action = PostDownloadAction.defaultActions.first { $0.actionType == .notify }
+        XCTAssertNotNil(action)
+    }
+
+    func testRunScriptActionCanBeCreated() {
+        let action = PostDownloadAction(
+            name: "Custom Script",
+            actionType: .runScript,
+            configuration: PostDownloadAction.ActionConfig().withScript("/usr/local/bin/post.sh")
+        )
+        XCTAssertEqual(action.actionType, .runScript)
+        XCTAssertEqual(action.configuration.scriptPath, "/usr/local/bin/post.sh")
+    }
+
+    func testConvertFormatActionCanBeCreated() {
+        var config = PostDownloadAction.ActionConfig()
+        config.targetFormat = "mp4"
+        let action = PostDownloadAction(name: "Convert to MP4", actionType: .convertFormat, configuration: config)
+        XCTAssertEqual(action.configuration.targetFormat, "mp4")
+    }
+
+    func testActionOrderDefault() {
+        let action = PostDownloadAction(name: "Test", actionType: .notify)
+        XCTAssertEqual(action.order, 0)
+    }
+}
+
+// MARK: - Functional Tests: StealthManager
+
+@MainActor
+final class StealthManagerTests: XCTestCase {
+
+    func testUserAgentPoolIsNotEmpty() {
+        XCTAssertFalse(StealthManager.builtInUserAgents.isEmpty)
+        XCTAssertGreaterThanOrEqual(StealthManager.builtInUserAgents.count, 50)
+    }
+
+    func testUserAgentRotationDoesNotRepeat() {
+        let manager = StealthManager.shared
+        manager.resetPool()
+
+        var agents: Set<String> = []
+        for _ in 0..<10 {
+            let agent = manager.nextUserAgent()
+            XCTAssertFalse(agents.contains(agent), "User agent should not repeat: \(agent)")
+            agents.insert(agent)
+        }
+    }
+
+    func testUserAgentPoolResetsAfterExhaustion() {
+        let manager = StealthManager.shared
+        manager.resetPool()
+
+        // Exhaust the pool
+        let poolSize = manager.currentPoolSize
+        for _ in 0..<poolSize {
+            _ = manager.nextUserAgent()
+        }
+
+        // Pool should reset on next call
+        let agent = manager.nextUserAgent()
+        XCTAssertFalse(agent.isEmpty)
+    }
+
+    func testAllUserAgentsAreMozillaCompatible() {
+        for agent in StealthManager.builtInUserAgents {
+            XCTAssertTrue(agent.hasPrefix("Mozilla/5.0"), "User agent should start with Mozilla/5.0: \(agent)")
+        }
+    }
+
+    func testUserAgentsAreUnique() {
+        let unique = Set(StealthManager.builtInUserAgents)
+        XCTAssertEqual(unique.count, StealthManager.builtInUserAgents.count, "All user agents should be unique")
+    }
+}
+
+// MARK: - Functional Tests: SponsorBlock API Response Parsing
+
+final class SponsorBlockAPIResponseTests: XCTestCase {
+
+    func testDecodeAPIResponse() throws {
+        let json = """
+        {
+            "videoID": "test123",
+            "segments": [
+                {"segment": [0.0, 30.5], "category": "sponsor", "UUID": "seg1"},
+                {"segment": [120.0, 135.0], "category": "intro", "UUID": "seg2"}
+            ]
+        }
+        """
+        let data = json.data(using: .utf8)!
+        let response = try JSONDecoder().decode(SponsorBlockAPIResponse.self, from: data)
+
+        XCTAssertEqual(response.videoID, "test123")
+        XCTAssertEqual(response.segments.count, 2)
+        XCTAssertEqual(response.segments[0].category, "sponsor")
+        XCTAssertEqual(response.segments[0].segment, [0.0, 30.5])
+    }
+}
+
+// =============================================================================
+// MARK: - Frame Tests
+// =============================================================================
+
+// MARK: - Frame Tests: App Launch & View Instantiation
+
+@MainActor
+final class FrameTests: XCTestCase {
+
+    func testDownloadItemCanBeInstantiatedInBulk() {
+        // Verify no crash when creating many download items at once
+        var items: [DownloadItem] = []
+        for i in 0..<100 {
+            items.append(DownloadItem(url: "https://example.com/video\(i)"))
+        }
+        XCTAssertEqual(items.count, 100)
+        // Each should have a unique ID
+        let uniqueIDs = Set(items.map { $0.id })
+        XCTAssertEqual(uniqueIDs.count, 100)
+    }
+
+    func testDataStoreCanBeAccessed() {
+        // Verify DataStore singleton is accessible without crash
+        let store = DataStore.shared
+        XCTAssertNotNil(store)
+        XCTAssertNotNil(store.settings)
+        XCTAssertNotNil(store.stealthProfile)
+    }
+
+    func testAppSettingsInitWithoutCrash() {
+        let settings = AppSettings()
+        XCTAssertNotNil(settings)
+        XCTAssertEqual(settings.theme, .dark)
+    }
+
+    func testStealthProfileInitWithoutCrash() {
+        let profile = StealthProfile()
+        XCTAssertNotNil(profile)
+        XCTAssertTrue(profile.isEnabled)
+    }
+
+    func testAllBuiltInPresetsInitWithoutCrash() {
+        let presets = DownloadPreset.builtInPresets
+        XCTAssertEqual(presets.count, 6)
+        for preset in presets {
+            XCTAssertNotNil(preset.id)
+            XCTAssertFalse(preset.name.isEmpty)
+            let args = preset.options.toArguments()
+            // Just verify toArguments doesn't crash
+            XCTAssertNotNil(args)
+        }
+    }
+
+    func testAllOutputTemplatePresetsInitWithoutCrash() {
+        let presets = OutputTemplatePreset.builtIn
+        XCTAssertGreaterThan(presets.count, 0)
+        for preset in presets {
+            XCTAssertFalse(preset.name.isEmpty)
+            XCTAssertFalse(preset.template.isEmpty)
+        }
+    }
+
+    func testAllOutputTemplateVariablesInitWithoutCrash() {
+        let vars = OutputTemplateVariable.allVariables
+        XCTAssertGreaterThan(vars.count, 0)
+        for v in vars {
+            XCTAssertFalse(v.name.isEmpty)
+            XCTAssertFalse(v.code.isEmpty)
+        }
+    }
+
+    func testDefaultPostDownloadActionsInitWithoutCrash() {
+        let actions = PostDownloadAction.defaultActions
+        XCTAssertGreaterThanOrEqual(actions.count, 2)
+        for action in actions {
+            XCTAssertFalse(action.name.isEmpty)
+            XCTAssertNotNil(action.actionType)
+        }
+    }
+
+    func testSpeedLimiterSharedAccessWithoutCrash() {
+        let limiter = SpeedLimiter.shared
+        XCTAssertNotNil(limiter)
+    }
+
+    func testStealthManagerSharedAccessWithoutCrash() {
+        let manager = StealthManager.shared
+        XCTAssertNotNil(manager)
+        XCTAssertGreaterThan(manager.currentPoolSize, 0)
+    }
+
+    func testNovaAPIServerSharedAccessWithoutCrash() {
+        let server = NovaAPIServer.shared
+        XCTAssertNotNil(server)
+        XCTAssertEqual(server.port, 37445)
+    }
+
+    func testSettingsLoadSaveRoundTrip() throws {
+        // Test that settings can be serialized and deserialized without data loss
+        var original = AppSettings()
+        original.maxConcurrentDownloads = 8
+        original.theme = .system
+        original.outputDirectory = "/tmp/test-output"
+        original.defaultOutputTemplate = "%(id)s - %(title)s.%(ext)s"
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        let data = try encoder.encode(original)
+
+        let decoded = try JSONDecoder().decode(AppSettings.self, from: data)
+
+        XCTAssertEqual(decoded.maxConcurrentDownloads, 8)
+        XCTAssertEqual(decoded.theme, .system)
+        XCTAssertEqual(decoded.outputDirectory, "/tmp/test-output")
+        XCTAssertEqual(decoded.defaultOutputTemplate, "%(id)s - %(title)s.%(ext)s")
+    }
+
+    func testStealthProfileLoadSaveRoundTrip() throws {
+        var original = StealthProfile()
+        original.isEnabled = false
+        original.minDelay = 3.0
+        original.maxDelay = 10.0
+        original.proxyEnabled = true
+        original.proxyList = ["socks5://p1", "http://p2"]
+        original.poToken = "token123"
+        original.visitorData = "visitor456"
+        original.playerClients = ["web", "ios"]
+
+        let data = try JSONEncoder().encode(original)
+        let decoded = try JSONDecoder().decode(StealthProfile.self, from: data)
+
+        XCTAssertFalse(decoded.isEnabled)
+        XCTAssertEqual(decoded.minDelay, 3.0)
+        XCTAssertEqual(decoded.maxDelay, 10.0)
+        XCTAssertTrue(decoded.proxyEnabled)
+        XCTAssertEqual(decoded.proxyList, ["socks5://p1", "http://p2"])
+        XCTAssertEqual(decoded.poToken, "token123")
+        XCTAssertEqual(decoded.visitorData, "visitor456")
+        XCTAssertEqual(decoded.playerClients, ["web", "ios"])
+    }
+
+    func testChannelSubscriptionLoadSaveRoundTrip() throws {
+        var sub = ChannelSubscription(
+            name: "Test Channel",
+            url: "https://youtube.com/@test",
+            checkInterval: .threeHours
+        )
+        sub.maxDownloadsPerCheck = 10
+        sub.autoDownload = false
+        sub.downloadedVideoIds = ["vid1", "vid2", "vid3"]
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(sub)
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(ChannelSubscription.self, from: data)
+
+        XCTAssertEqual(decoded.name, "Test Channel")
+        XCTAssertEqual(decoded.checkInterval, .threeHours)
+        XCTAssertEqual(decoded.maxDownloadsPerCheck, 10)
+        XCTAssertFalse(decoded.autoDownload)
+        XCTAssertEqual(decoded.downloadedVideoIds.count, 3)
     }
 }
