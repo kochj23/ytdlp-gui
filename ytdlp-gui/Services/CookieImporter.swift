@@ -51,6 +51,11 @@ class CookieImporter: ObservableObject {
                 try fm.removeItem(atPath: destPath)
             }
             try fm.copyItem(atPath: path, toPath: destPath)
+
+            // Restrict cookie file to owner-only read/write (0600) to prevent
+            // other local users from reading authentication cookies.
+            try fm.setAttributes([.posixPermissions: 0o600], ofItemAtPath: destPath)
+
             lastImportStatus = "Cookies imported successfully"
             logger.info("Cookies imported from: \(path)")
             return true

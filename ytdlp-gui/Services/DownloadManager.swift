@@ -22,6 +22,7 @@ class DownloadManager: ObservableObject {
 
     private var activeServices: [UUID: YTDLPService] = [:]
     private var activeTasks: [UUID: Task<Void, Never>] = [:]
+    private var progressTasks: [UUID: Task<Void, Never>] = [:]
     private let logger = Logger(subsystem: "com.jordankoch.ytdlp-gui", category: "DownloadManager")
 
     var activeCount: Int {
@@ -45,8 +46,19 @@ class DownloadManager: ObservableObject {
     }
 
     func enqueueMultiple(urls: [String], options: YTDLPOptions = YTDLPOptions()) {
+        // Pre-compute stealth configuration once for the entire batch instead
+        // of calling StealthManager.shared.nextUserAgent() per-download in startDownload.
+        // Each item gets a frozen user agent so the pool isn't exhausted during enqueue.
+        let stealth = DataStore.shared.stealthProfile
+        let batchUserAgent: String? = (stealth.isEnabled && stealth.rotateUserAgents)
+            ? StealthManager.shared.nextUserAgent() : nil
+
         for url in urls {
-            let item = DownloadItem(url: url, options: options)
+            var batchOptions = options
+            if let ua = batchUserAgent {
+                batchOptions.userAgent = ua
+            }
+            let item = DownloadItem(url: url, options: batchOptions)
             queue.append(item)
         }
         processQueue()
@@ -227,15 +239,17 @@ class DownloadManager: ObservableObject {
 
         activeTasks[id] = task
 
-        // Observe progress
-        Task {
+        // Observe progress — store the task so it can be cancelled when the download ends
+        let progressTask = Task { [weak self] in
             for await _ in service.$currentProgress.values {
-                if let idx = queue.firstIndex(where: { $0.id == id }) {
-                    queue[idx].progress = service.currentProgress
+                guard let self = self, !Task.isCancelled else { break }
+                if let idx = self.queue.firstIndex(where: { $0.id == id }) {
+                    self.queue[idx].progress = service.currentProgress
                 }
-                updateTotalSpeed()
+                self.updateTotalSpeed()
             }
         }
+        progressTasks[id] = progressTask
     }
 
     // MARK: - Queue Controls
@@ -301,6 +315,7 @@ class DownloadManager: ObservableObject {
     private func cleanupDownload(_ id: UUID) {
         activeServices.removeValue(forKey: id)
         activeTasks.removeValue(forKey: id)
+        progressTasks.removeValue(forKey: id)?.cancel()
     }
 
     private func updateTotalSpeed() {
