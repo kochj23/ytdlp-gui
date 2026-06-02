@@ -22,13 +22,20 @@ Carthage/
 *.app
 *.dmg
 
-# Secrets
+# Secrets & user data
 *.p12
 *.cer
 *.mobileprovision
 secrets.json
 credentials.json
 .env
+cookies.txt
+stealth.json
+session_config.json
+audio_config.json
+queue.json
+skiplist.json
+settings.json
 
 # IDE
 .idea/
