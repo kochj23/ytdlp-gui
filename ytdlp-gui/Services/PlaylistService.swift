@@ -44,7 +44,8 @@ class PlaylistService: ObservableObject {
         defer { isFetching = false }
 
         let service = YTDLPService()
-        let info = try await service.fetchPlaylistInfo(url: url)
+        let cookieArgs = SubscriptionManager.buildCookieArgs()
+        let info = try await service.fetchPlaylistInfo(url: url, cookieArgs: cookieArgs)
         currentPlaylist = info
         logger.info("Fetched playlist: \(info.title ?? "Unknown") with \(info.entries?.count ?? 0) entries")
         return info

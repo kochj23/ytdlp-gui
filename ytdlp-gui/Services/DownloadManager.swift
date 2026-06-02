@@ -148,61 +148,58 @@ class DownloadManager: ObservableObject {
         let item = queue[index]
         let outputDir = item.outputDirectoryOverride ?? DataStore.shared.settings.outputDirectory
 
-        // Apply stealth if enabled
+        // Apply stealth — Nova strategy: cookies + player_client is the core.
+        // Identity spoofing (user-agent, referer, consent cookie) is COUNTERPRODUCTIVE
+        // when valid session cookies are present — YouTube detects the mismatch.
         var options = item.options
         let stealth = DataStore.shared.stealthProfile
         if stealth.isEnabled {
-            if stealth.rotateUserAgents {
-                options.userAgent = StealthManager.shared.nextUserAgent()
-            }
-            if let target = stealth.impersonateTarget, !target.isEmpty,
-               BinaryManager.shared.impersonateAvailable {
-                options.impersonate = target
-            }
+            // 1. Cookies — use --cookies-from-browser directly (file export goes stale instantly
+            // because YouTube rotates tokens on access; subprocess inherits keychain access)
             if let browserCookie = stealth.cookieSource.ytdlpValue {
                 options.cookiesFromBrowser = browserCookie
+            } else if stealth.cookieSource == .file, let path = stealth.cookieFilePath, !path.isEmpty {
+                options.cookies = path
             }
+
+            // 2. Player client (Nova uses "web,default" — never rotate when using cookies)
+            let hasCookies = options.cookies != nil || options.cookiesFromBrowser != nil
+            if hasCookies {
+                options.extractorArgs.append("youtube:player_client=web,default")
+            } else {
+                // No cookies — use full stealth suite (anonymous mode)
+                if stealth.rotateUserAgents {
+                    options.userAgent = StealthManager.shared.nextUserAgent()
+                }
+                if let target = stealth.impersonateTarget, !target.isEmpty,
+                   BinaryManager.shared.impersonateAvailable {
+                    options.impersonate = target
+                }
+                if stealth.usePlayerClientRotation {
+                    let client = stealth.playerClients.randomElement() ?? "web"
+                    options.extractorArgs.append("youtube:player_client=\(client)")
+                }
+                if stealth.setReferer {
+                    options.referer = "https://www.youtube.com/"
+                }
+                if stealth.sendConsentCookie {
+                    options.addHeaders.append("Cookie:CONSENT=PENDING+999")
+                }
+            }
+
+            // 3. PO token (overrides player client when set)
+            if let poToken = stealth.poToken, !poToken.isEmpty {
+                options.extractorArgs = options.extractorArgs.filter { !$0.contains("player_client") }
+                var parts = "player_client=web;po_token=\(poToken)"
+                if let visitorData = stealth.visitorData, !visitorData.isEmpty {
+                    parts += ";visitor_data=\(visitorData)"
+                }
+                options.extractorArgs.append("youtube:\(parts)")
+            }
+
+            // 4. Proxy (independent of cookie state)
             if stealth.proxyEnabled, let proxy = StealthManager.shared.nextProxy() {
                 options.proxy = proxy
-            }
-            // Enhanced anti-detection: player client rotation, referer, headers
-            // Build a single youtube extractor-args string to avoid conflicts
-            var ytExtractorParts: [String] = []
-
-            if let poToken = stealth.poToken, !poToken.isEmpty {
-                // PO token requires web client - override rotation
-                ytExtractorParts.append("player_client=web")
-                ytExtractorParts.append("po_token=\(poToken)")
-                if let visitorData = stealth.visitorData, !visitorData.isEmpty {
-                    ytExtractorParts.append("visitor_data=\(visitorData)")
-                }
-            } else if stealth.usePlayerClientRotation {
-                let clients = stealth.playerClients
-                if !clients.isEmpty {
-                    let client = clients.randomElement() ?? "web"
-                    ytExtractorParts.append("player_client=\(client)")
-                }
-            }
-
-            if !ytExtractorParts.isEmpty {
-                options.extractorArgs.append("youtube:\(ytExtractorParts.joined(separator: ";"))")
-            }
-
-            if stealth.setReferer {
-                options.referer = "https://www.youtube.com/"
-            }
-            if stealth.sendConsentCookie {
-                options.addHeaders.append("Cookie:CONSENT=PENDING+999")
-            }
-            // Sleep between requests to mimic human behavior
-            if stealth.sleepBetweenRequests > 0 {
-                options.sleepRequests = stealth.sleepBetweenRequests
-                options.sleepInterval = stealth.minDelay
-                options.maxSleepInterval = stealth.maxDelay
-            }
-            // Cookie file support (when source is .file)
-            if stealth.cookieSource == .file, let cookiePath = stealth.cookieFilePath, !cookiePath.isEmpty {
-                options.cookies = cookiePath
             }
         }
 

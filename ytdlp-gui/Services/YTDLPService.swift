@@ -50,11 +50,14 @@ class YTDLPService: ObservableObject {
 
     // MARK: - Fetch Metadata
 
-    func fetchMetadata(url: String) async throws -> MediaMetadata {
+    func fetchMetadata(url: String, cookieArgs: [String] = []) async throws -> MediaMetadata {
         let binaryManager = await BinaryManager.shared
         let binaryPath = await binaryManager.ytdlpPath
 
-        let args = ["--dump-json", "--no-download", "--no-warnings", url]
+        var args = ["--dump-json", "--no-download", "--no-warnings"]
+        args += cookieArgs
+        args += ["--extractor-args", "youtube:player_client=web,default"]
+        args.append(url)
         let output = try await executeSimple(binaryPath: binaryPath, arguments: args)
 
         guard let data = output.data(using: .utf8) else {
@@ -67,11 +70,14 @@ class YTDLPService: ObservableObject {
 
     // MARK: - Fetch Playlist Info
 
-    func fetchPlaylistInfo(url: String) async throws -> PlaylistInfo {
+    func fetchPlaylistInfo(url: String, cookieArgs: [String] = []) async throws -> PlaylistInfo {
         let binaryManager = await BinaryManager.shared
         let binaryPath = await binaryManager.ytdlpPath
 
-        let args = ["--flat-playlist", "--dump-single-json", "--no-warnings", url]
+        var args = ["--flat-playlist", "--dump-single-json", "--no-warnings"]
+        args += cookieArgs
+        args += ["--extractor-args", "youtube:player_client=web,default"]
+        args.append(url)
         let output = try await executeSimple(binaryPath: binaryPath, arguments: args)
 
         guard let data = output.data(using: .utf8) else {

@@ -84,7 +84,8 @@ class SubscriptionManager: ObservableObject {
         let service = YTDLPService()
 
         do {
-            let playlist = try await service.fetchPlaylistInfo(url: sub.url)
+            let cookieArgs = Self.buildCookieArgs()
+            let playlist = try await service.fetchPlaylistInfo(url: sub.url, cookieArgs: cookieArgs)
             let entries = playlist.entries ?? []
 
             // Find new entries not already downloaded
@@ -137,6 +138,19 @@ class SubscriptionManager: ObservableObject {
             subscriptions[index].lastCheckedAt = nil
         }
         checkDueSubscriptions()
+    }
+
+    // MARK: - Cookie Args Helper
+
+    static func buildCookieArgs() -> [String] {
+        let stealth = DataStore.shared.stealthProfile
+        if stealth.isEnabled, let browser = stealth.cookieSource.ytdlpValue {
+            return ["--cookies-from-browser", browser]
+        }
+        if stealth.cookieSource == .file, let path = stealth.cookieFilePath, !path.isEmpty {
+            return ["--cookies", path]
+        }
+        return []
     }
 
     // MARK: - Persistence

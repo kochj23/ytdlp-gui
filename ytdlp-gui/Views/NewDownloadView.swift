@@ -337,7 +337,8 @@ struct NewDownloadView: View {
 
         Task {
             do {
-                let meta = try await metadataService.fetchMetadata(url: urlText)
+                let cookieArgs = ["--cookies-from-browser", "chrome"]
+                let meta = try await metadataService.fetchMetadata(url: urlText, cookieArgs: cookieArgs)
                 await MainActor.run {
                     metadata = meta
                     formats = meta.formats ?? []

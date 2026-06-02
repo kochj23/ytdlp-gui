@@ -27,9 +27,24 @@ class MetadataService: ObservableObject {
         defer { isFetching = false }
 
         let service = YTDLPService()
-        let metadata = try await service.fetchMetadata(url: url)
+        let metadata = try await service.fetchMetadata(url: url, cookieArgs: stealthCookieArgs())
         logger.info("Fetched metadata for: \(metadata.title ?? "Unknown")")
         return metadata
+    }
+
+    private func stealthCookieArgs() -> [String] {
+        // YouTube rotates session cookies on every access, so exported files go
+        // stale immediately. Must use --cookies-from-browser on every call.
+        // The subprocess inherits user keychain access so this works from GUI apps.
+        let stealth = DataStore.shared.stealthProfile
+        if stealth.isEnabled, let browser = stealth.cookieSource.ytdlpValue {
+            return ["--cookies-from-browser", browser]
+        }
+        // Fallback to cookie file if manually imported
+        if stealth.cookieSource == .file, let path = stealth.cookieFilePath, !path.isEmpty {
+            return ["--cookies", path]
+        }
+        return []
     }
 
     // MARK: - Fetch Available Formats

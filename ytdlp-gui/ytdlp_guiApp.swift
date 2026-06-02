@@ -124,6 +124,14 @@ struct ytdlp_guiApp: App {
         // Initialize Nova session services
         SkipListManager.shared.loadSkipList()
         _ = SessionManager.shared
+
+        // Auto-export cookies on launch (required for YouTube — app can't access browser DBs directly)
+        let stealth = dataStore.stealthProfile
+        if stealth.isEnabled && stealth.cookieSource != .none && stealth.cookieSource != .file {
+            Task {
+                _ = await CookieRefreshService.shared.refreshCookies()
+            }
+        }
         if dataStore.sessionConfig.cookieAutoRefreshEnabled {
             CookieRefreshService.shared.startPeriodicCheck()
         }
