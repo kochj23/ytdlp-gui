@@ -36,11 +36,13 @@ class DownloadManager: ObservableObject {
     // MARK: - Enqueue
 
     @discardableResult
-    func enqueue(url: String, options: YTDLPOptions = YTDLPOptions(), presetName: String? = nil) -> UUID {
+    func enqueue(url: String, options: YTDLPOptions = YTDLPOptions(), presetName: String? = nil, outputDir: String? = nil) -> UUID {
         var item = DownloadItem(url: url, options: options)
         item.presetName = presetName
+        item.outputDirectoryOverride = outputDir
         queue.append(item)
         logger.info("Enqueued: \(url)")
+        saveQueue()
         processQueue()
         return item.id
     }
@@ -144,7 +146,7 @@ class DownloadManager: ObservableObject {
         activeServices[id] = service
 
         let item = queue[index]
-        let outputDir = DataStore.shared.settings.outputDirectory
+        let outputDir = item.outputDirectoryOverride ?? DataStore.shared.settings.outputDirectory
 
         // Apply stealth if enabled
         var options = item.options
@@ -209,6 +211,34 @@ class DownloadManager: ObservableObject {
             options.limitRate = rateLimit
         }
 
+        // Smart audio extraction: detect music and route to audio output
+        let audioConfig = DataStore.shared.audioConfig
+        var effectiveOutputDir = outputDir
+        if audioConfig.enabled && audioConfig.autoDetectMusic {
+            let title = item.title ?? item.url
+            let isMusicContent = audioConfig.isMusicContent(
+                title: title,
+                channel: item.uploader,
+                duration: item.duration
+            )
+            if isMusicContent {
+                options.extractAudio = true
+                options.audioFormat = audioConfig.format.ytdlpCodec
+                options.audioQuality = audioConfig.quality.ytdlpValue
+                if audioConfig.embedThumbnail { options.embedThumbnail = true }
+                if audioConfig.embedMetadata { options.embedMetadata = true }
+                effectiveOutputDir = audioConfig.outputDirectory
+
+                // Parse artist/title for output template
+                let (artist, parsedTitle) = audioConfig.parseArtistAndTitle(from: title)
+                if let artist = artist {
+                    options.outputTemplate = "\(artist) - \(parsedTitle ?? title).%(ext)s"
+                }
+
+                logger.info("Music detected: routing to audio extraction → \(effectiveOutputDir)")
+            }
+        }
+
         let sessionConfig = DataStore.shared.sessionConfig
         let task = Task {
             // Apply delay: use Nova-style realistic delays if enabled, otherwise standard stealth delay
@@ -224,7 +254,7 @@ class DownloadManager: ObservableObject {
             }
 
             do {
-                let result = try await service.download(url: item.url, options: options, outputDir: outputDir)
+                let result = try await service.download(url: item.url, options: options, outputDir: effectiveOutputDir)
 
                 await MainActor.run {
                     if let idx = self.queue.firstIndex(where: { $0.id == id }) {
@@ -399,12 +429,57 @@ class DownloadManager: ObservableObject {
         processQueue()
     }
 
+    // MARK: - Queue Persistence
+
+    private var queueFile: URL {
+        DataStore.shared.appSupportDirectory.appendingPathComponent("queue.json")
+    }
+
+    func saveQueue() {
+        let saveable = queue.filter { !$0.status.isTerminal }
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted]
+            encoder.dateEncodingStrategy = .iso8601
+            let data = try encoder.encode(saveable)
+            try data.write(to: queueFile, options: .atomic)
+        } catch {
+            logger.error("Failed to save queue: \(error.localizedDescription)")
+        }
+    }
+
+    func restoreQueue() {
+        guard FileManager.default.fileExists(atPath: queueFile.path) else { return }
+        do {
+            let data = try Data(contentsOf: queueFile)
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            var restored = try decoder.decode([DownloadItem].self, from: data)
+            // Reset active/retrying items to queued so they restart
+            for i in restored.indices {
+                if restored[i].status.isActive || restored[i].status == .retrying {
+                    restored[i].status = .queued
+                    restored[i].progress = DownloadProgress()
+                }
+            }
+            let restoredCount = restored.filter { $0.status == .queued || $0.status == .paused }.count
+            if restoredCount > 0 {
+                queue = restored
+                logger.info("Restored \(restoredCount) queued items from disk")
+                processQueue()
+            }
+        } catch {
+            logger.error("Failed to restore queue: \(error.localizedDescription)")
+        }
+    }
+
     // MARK: - Helpers
 
     private func cleanupDownload(_ id: UUID) {
         activeServices.removeValue(forKey: id)
         activeTasks.removeValue(forKey: id)
         progressTasks.removeValue(forKey: id)?.cancel()
+        saveQueue()
     }
 
     private func updateTotalSpeed() {

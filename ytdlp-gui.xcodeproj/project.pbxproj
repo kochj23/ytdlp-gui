@@ -69,6 +69,7 @@
 		CE7AC57E4C65C5FFD396E7B1 /* ytdlp_guiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBF44FA1B16C4CB8B1D09B7 /* ytdlp_guiTests.swift */; };
 		DB2E4A2F31EC14AF5E9896C5 /* PresetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63A2A15573FC4B4FC6BEF51 /* PresetsView.swift */; };
 		DE4F49DC38E9EF9BACCECEFD /* StealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D107B2F92360A51DBF7C20F /* StealthManager.swift */; };
+		E026A40694AA78CF77DC5D82 /* AudioExtractionConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7312A64508CE2792D67ED40 /* AudioExtractionConfig.swift */; };
 		E5DFD3B3427CBEC2F99FA58E /* QueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF4589E8D3FB169EEF1ADA17 /* QueueView.swift */; };
 		F2F7411A1738720F95E372E3 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 333C18BACD1762C629154077 /* DashboardView.swift */; };
 		F45B00AD107991B388050262 /* OptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26B57832E90F7A2DD014A2C5 /* OptionsView.swift */; };
@@ -173,6 +174,7 @@
 		CE6FA929FDA88D94C79A9D11 /* LibraryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryItem.swift; sourceTree = "<group>"; };
 		D66968B2A28440AADB6EF8E9 /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
 		D7037FE80901A1AA1B61B913 /* HistoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryManager.swift; sourceTree = "<group>"; };
+		D7312A64508CE2792D67ED40 /* AudioExtractionConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioExtractionConfig.swift; sourceTree = "<group>"; };
 		D898AEA5F1F18E62E366E8B2 /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
 		E001AB4F963161F38099A6B0 /* WidgetData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetData.swift; sourceTree = "<group>"; };
 		E3DE256DB81990882BBCDB3D /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
@@ -229,6 +231,7 @@
 			isa = PBXGroup;
 			children = (
 				E3DE256DB81990882BBCDB3D /* AppSettings.swift */,
+				D7312A64508CE2792D67ED40 /* AudioExtractionConfig.swift */,
 				37D402D1122CEBE03E8CD6BF /* ChannelSubscription.swift */,
 				082EE99562C6B35950619B30 /* DownloadItem.swift */,
 				4720604B38E53ED94281D540 /* DownloadPreset.swift */,
@@ -491,6 +494,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7F14C20E29BD419F27556F23 /* AppSettings.swift in Sources */,
+				E026A40694AA78CF77DC5D82 /* AudioExtractionConfig.swift in Sources */,
 				3873FBB175ECA7D9F6117114 /* AudioWaveformService.swift in Sources */,
 				FFD10D8A0A3C3B44E4F3B0B7 /* AudioWaveformView.swift in Sources */,
 				5E00545BDE22680C43C54D2A /* BatchImportView.swift in Sources */,

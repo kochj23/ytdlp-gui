@@ -127,6 +127,9 @@ struct ytdlp_guiApp: App {
         if dataStore.sessionConfig.cookieAutoRefreshEnabled {
             CookieRefreshService.shared.startPeriodicCheck()
         }
+
+        // Restore persisted download queue from last session
+        DownloadManager.shared.restoreQueue()
     }
 
     // MARK: - URL Scheme Handler (ytdlp-gui://download?url=...)

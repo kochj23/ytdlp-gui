@@ -99,7 +99,16 @@ class SubscriptionManager: ObservableObject {
                     if let url = entry.url {
                         // Skip-list check: don't enqueue known-bad URLs
                         guard !SkipListManager.shared.isSkipped(url) else { continue }
-                        DownloadManager.shared.enqueue(url: url, options: sub.options)
+
+                        // Apply per-channel output routing
+                        var opts = sub.options
+                        opts.outputTemplate = sub.effectiveOutputTemplate
+                        let subOutputDir = sub.effectiveOutputDirectory(fallback: DataStore.shared.settings.outputDirectory)
+                        DownloadManager.shared.enqueue(
+                            url: url,
+                            options: opts,
+                            outputDir: subOutputDir
+                        )
                         if let entryId = entry.entryId {
                             subscriptions[index].downloadedVideoIds.append(entryId)
                         }

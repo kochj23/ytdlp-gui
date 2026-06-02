@@ -23,6 +23,10 @@ struct ChannelSubscription: Identifiable, Codable {
     var autoDownload: Bool
     var createdAt: Date
 
+    // Per-channel output routing
+    var customOutputDirectory: String?
+    var outputTemplate: OutputRouting = .default
+
     init(name: String, url: String, checkInterval: CheckInterval = .sixHours, options: YTDLPOptions = YTDLPOptions()) {
         self.id = UUID()
         self.name = name
@@ -34,6 +38,42 @@ struct ChannelSubscription: Identifiable, Codable {
         self.maxDownloadsPerCheck = 5
         self.autoDownload = true
         self.createdAt = Date()
+    }
+
+    enum OutputRouting: String, Codable, CaseIterable, Identifiable {
+        case `default` = "Default"
+        case channelFolder = "Channel Folder"
+        case plexShow = "Plex (Show/Season)"
+        case plexMovie = "Plex (Movies)"
+        case dateFolder = "Date Folder"
+        case custom = "Custom Template"
+
+        var id: String { rawValue }
+
+        func outputTemplate(channelName: String) -> String {
+            switch self {
+            case .default:
+                return "%(title)s.%(ext)s"
+            case .channelFolder:
+                return "\(channelName)/%(title)s.%(ext)s"
+            case .plexShow:
+                return "\(channelName)/Season 01/\(channelName) - S01E%(playlist_index|00)s - %(title)s.%(ext)s"
+            case .plexMovie:
+                return "\(channelName) (%(upload_date>%Y)s)/%(title)s.%(ext)s"
+            case .dateFolder:
+                return "%(upload_date>%Y-%m-%d)s/%(title)s.%(ext)s"
+            case .custom:
+                return "%(title)s.%(ext)s"
+            }
+        }
+    }
+
+    func effectiveOutputDirectory(fallback: String) -> String {
+        customOutputDirectory ?? fallback
+    }
+
+    var effectiveOutputTemplate: String {
+        outputTemplate.outputTemplate(channelName: name)
     }
 
     enum CheckInterval: String, Codable, CaseIterable, Identifiable {

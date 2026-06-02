@@ -33,6 +33,9 @@ struct DownloadItem: Identifiable, Codable {
     // Retry (retry limit is controlled by StealthProfile.maxRetries)
     var retryCount: Int = 0
 
+    // Per-channel output routing
+    var outputDirectoryOverride: String?
+
     // Playlist context
     var playlistTitle: String?
     var playlistIndex: Int?
