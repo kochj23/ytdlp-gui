@@ -1,6 +1,6 @@
 # ytdlp-gui
 
-A modern macOS GUI for yt-dlp with full option coverage, anti-detection capabilities, download scheduling, channel subscriptions, and a glassmorphic SwiftUI interface.
+A modern macOS GUI for yt-dlp with full option coverage, battle-tested anti-detection, download scheduling, channel subscriptions, smart audio extraction, and a glassmorphic SwiftUI interface.
 
 ![macOS 14.0+](https://img.shields.io/badge/macOS-14.0%2B-blue)
 ![Swift 5.9](https://img.shields.io/badge/Swift-5.9-orange)
@@ -15,10 +15,12 @@ A modern macOS GUI for yt-dlp with full option coverage, anti-detection capabili
 | Feature | Description |
 |---------|-------------|
 | 160+ yt-dlp flags | Visual editor across 17 categories -- every option accessible without a terminal |
-| Download queue | Configurable concurrency (1-10 simultaneous), pause/resume/cancel per item |
+| Download queue | Configurable concurrency (1-10 simultaneous), pause/resume/cancel per item, **persistent across restarts** |
 | Playlist detection | Auto-detect YouTube playlists, browse entries, selective download |
 | Format selector | Visual picker with quality comparison and quick presets (Best Video, Audio MP3/FLAC, 1080p, 720p) |
-| Anti-detection suite | User agent rotation (50+ agents), random delays, TLS impersonation, proxy rotation, cookie import (Chrome/Firefox/Safari/Edge/Brave), player client rotation, PO token support, auto-retry on 429/403 |
+| **Nova Session Intelligence** | Battle-tested anti-detection from 677-channel production automation (see below) |
+| **Smart audio extraction** | Auto-detect music content, extract to MP3/FLAC with ID3 tags, route to music library |
+| **Per-channel output routing** | Custom output directories per subscription with Plex-friendly naming templates |
 | Download library | Persistent history with thumbnails, search, filtering, favorites, one-click re-download |
 | Presets | Built-in and custom download presets including Stealth Mode |
 | Clipboard monitor | Watches clipboard for video URLs, offers instant download |
@@ -31,6 +33,57 @@ A modern macOS GUI for yt-dlp with full option coverage, anti-detection capabili
 | Desktop widget | WidgetKit extension (Small / Medium / Large) with live download queue and daily stats |
 | Log viewer | Color-coded real-time yt-dlp output |
 | Nova API server | HTTP API on port 37445 (loopback only) |
+| Skip list | Persistent list of URLs to never re-attempt (members-only, geo-blocked, etc.) |
+
+---
+
+## Nova Session Intelligence
+
+Six anti-detection strategies ported from production automation that downloads from 677+ YouTube channels daily without triggering rate limits:
+
+| Strategy | What It Does |
+|----------|-------------|
+| Cookie TTL & auto-refresh | Monitors cookie file age, auto-refreshes from browser when stale (6h default) |
+| Hard/soft block detection | Classifies errors: hard blocks (429/403) pause the session; soft errors (members-only, age-restricted) skip and continue |
+| Realistic inter-download delays | 5-75 seconds between downloads (not 1-5s like typical tools), 60-188s between batches |
+| Batch sizing with zero-batches | Random 0-4 downloads per batch; zero-batches create deliberate idle periods that mimic browsing |
+| Session-level rate limit halt | After N consecutive hard blocks, halts the entire session instead of continuing to poke the bear |
+| Persistent skip list | URLs that fail for structural reasons (members-only, geo-restricted) are permanently skipped |
+
+All features are opt-in with safe defaults. Enable in **Anti-Detection > Nova Session Intelligence**.
+
+---
+
+## Smart Audio Extraction
+
+Automatically detects music content and extracts audio with proper metadata:
+
+- **Detection engine**: Matches by 80+ keywords (remix, DJ set, boiler room, etc.), `Artist - Title` filename patterns, channel whitelist, and duration range
+- **Format options**: MP3, FLAC, Opus, WAV, M4A with configurable quality (Best/256k/192k/128k)
+- **ID3 tagging**: Parses artist and title from filename, embeds thumbnail as cover art
+- **Separate output**: Routes music to a dedicated directory (default `~/Music/ytdlp-gui`)
+- **Fully configurable**: Custom keyword lists, channel whitelists, duration bounds
+
+---
+
+## Per-Channel Output Routing
+
+Each subscription can have its own output directory and naming template:
+
+| Template | Pattern | Example |
+|----------|---------|---------|
+| Default | `%(title)s.%(ext)s` | `Video Title.mp4` |
+| Channel Folder | `ChannelName/%(title)s.%(ext)s` | `MKBHD/Video Title.mp4` |
+| Plex (Show) | `Show/Season 01/Show - S01Exx - Title.%(ext)s` | `LTT/Season 01/LTT - S01E05 - Title.mp4` |
+| Plex (Movie) | `Title (Year)/Title.%(ext)s` | `Channel (2024)/Video Title.mp4` |
+| Date Folder | `%(upload_date)s/%(title)s.%(ext)s` | `2024-03-15/Video Title.mp4` |
+| Custom | Any yt-dlp template | User-defined |
+
+---
+
+## Persistent Download Queue
+
+The download queue survives app restarts. Active downloads are automatically resumed on next launch -- you'll never lose a batch if the app crashes, gets killed, or macOS restarts.
 
 ---
 
@@ -58,6 +111,9 @@ graph TD
         DM[DownloadManager<br/>Queue + Concurrency]
         YS[YTDLPService<br/>Process Execution]
         SM[StealthManager<br/>Anti-Detection]
+        SESS[SessionManager<br/>Nova Intelligence]
+        CRS[CookieRefreshService<br/>Auto-Refresh]
+        SLM[SkipListManager<br/>Permanent Skips]
         BM[BinaryManager<br/>yt-dlp + ffmpeg]
         CM[ClipboardMonitor<br/>URL Detection]
         SBS[SponsorBlockService<br/>Segment API]
@@ -88,8 +144,12 @@ graph TD
     QV --> DM
     DM --> YS
     DM --> SM
+    DM --> SESS
+    DM --> SLM
+    DM --> CRS
     DM --> SL
     DM --> PDM
+    SESS --> SLM
     YS -->|Process.arguments| YTDLP
     YS --> BM
     BM --> YTDLP & FFMPEG
@@ -97,6 +157,7 @@ graph TD
     CM --> DM
     SCH --> DM
     SUB --> DM
+    SUB --> SLM
     DM --> DS
     DM --> WDS
     WDS --> WIDGET[WidgetKit Extension]
@@ -129,7 +190,9 @@ graph TD
 ```bash
 git clone https://github.com/kochj23/ytdlp-gui.git
 cd ytdlp-gui
-xcodebuild -project ytdlp-gui.xcodeproj -scheme ytdlp-gui -configuration Release build
+brew install xcodegen  # if not installed
+xcodegen generate
+xcodebuild -scheme ytdlp-gui -configuration Release build CODE_SIGNING_ALLOWED=NO
 ```
 
 ## Testing
