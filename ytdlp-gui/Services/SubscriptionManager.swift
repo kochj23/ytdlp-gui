@@ -97,6 +97,8 @@ class SubscriptionManager: ObservableObject {
                 let toDownload = Array(newEntries.prefix(sub.maxDownloadsPerCheck))
                 for entry in toDownload {
                     if let url = entry.url {
+                        // Skip-list check: don't enqueue known-bad URLs
+                        guard !SkipListManager.shared.isSkipped(url) else { continue }
                         DownloadManager.shared.enqueue(url: url, options: sub.options)
                         if let entryId = entry.entryId {
                             subscriptions[index].downloadedVideoIds.append(entryId)

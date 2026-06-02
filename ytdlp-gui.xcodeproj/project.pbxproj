@@ -12,6 +12,7 @@
 		045923CD022CA4737DED5726 /* ChannelSubscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37D402D1122CEBE03E8CD6BF /* ChannelSubscription.swift */; };
 		107490B147DB25A5DBACD68F /* YTDLPService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF7C1C287E15D06EC4372EA0 /* YTDLPService.swift */; };
 		145AEC02C4E095F2DA967869 /* OutputTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09909B4DF7EDB6422ACE4DAA /* OutputTemplate.swift */; };
+		176DDA2963DE569C6ED4F64F /* CookieRefreshService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CB114A47A0DB5783DD100EF /* CookieRefreshService.swift */; };
 		19C40139A5BBE2347A849790 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72449F7DFF9EC68D815D4520 /* ContentView.swift */; };
 		1C229598B088343421DC0F69 /* SpeedLimitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E928038429F28C8D155DE65 /* SpeedLimitView.swift */; };
 		1EDE89498267E72212B0959F /* YTDLPOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BA4628E688C8C38702550D /* YTDLPOptions.swift */; };
@@ -22,6 +23,7 @@
 		3873FBB175ECA7D9F6117114 /* AudioWaveformService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0578F9697355E46BDA3A37 /* AudioWaveformService.swift */; };
 		3B6EC8204074EE6BE033D564 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8742DA0FCF01BFD38034E1D /* LogView.swift */; };
 		3C19ED7549806C88BD31C19A /* PlaylistService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B096BBBF71D7C39D04D94600 /* PlaylistService.swift */; };
+		3E7194F4377B6F689CEA7FD8 /* SkipListManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C19431B219AA350B34414FD /* SkipListManager.swift */; };
 		3FBB5084689978C00930F06C /* SponsorBlockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E93D1F83258F3ADF019E3FF /* SponsorBlockService.swift */; };
 		409E978097DA439C18D25718 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8DE05A5048C8FFFA2530BA /* SettingsView.swift */; };
 		41B5181426BC1ABE90F20C84 /* ytdlp-gui Widget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3BB068D17EF929B3474D83E9 /* ytdlp-gui Widget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -35,9 +37,11 @@
 		4DCF622003CC18BB16C505D8 /* DownloadProgressCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDD3FE868B5C3B1C74F04562 /* DownloadProgressCard.swift */; };
 		52DDA87E50CA974E23AE3CF9 /* LibraryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C2745F50D2204DDC7369AE4 /* LibraryDetailView.swift */; };
 		55B347C1FBBA8C837CE0BB7D /* StealthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F205C1943BEEEF69D2119624 /* StealthView.swift */; };
+		5760A1CE37D45C28D9DFC016 /* SkipListEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F315B488432533BC080FE569 /* SkipListEntry.swift */; };
 		5E00545BDE22680C43C54D2A /* BatchImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B7698E3A6F107F6423CC3B /* BatchImportView.swift */; };
 		5F7CDA64B96237AE0FA2A18E /* MetadataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B817B2362C9EAA9323527545 /* MetadataService.swift */; };
 		685B67DFE3E9D1950158B3F1 /* BinaryManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9916098C34CCE670100FD2F8 /* BinaryManagerView.swift */; };
+		68826E44F622AA8E36C0F617 /* SessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D898AEA5F1F18E62E366E8B2 /* SessionManager.swift */; };
 		6C8EB87A0E3FBA6250A03DD2 /* ClipboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDDDACD926BE04AB752F502 /* ClipboardMonitor.swift */; };
 		77E428D6BC3C4E38C14FA1FB /* ytdlp_guiWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81DAE73B909AD35F60BE2850 /* ytdlp_guiWidget.swift */; };
 		7F14C20E29BD419F27556F23 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DE256DB81990882BBCDB3D /* AppSettings.swift */; };
@@ -48,10 +52,12 @@
 		87B00936C2B94D56BCE1123A /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D66968B2A28440AADB6EF8E9 /* DataStore.swift */; };
 		8E99B786FBDCAF25B3F0C27F /* ClipboardMonitorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B329FD625A1FA40FD7811AAC /* ClipboardMonitorView.swift */; };
 		91495FEC388BAD3557E38BD3 /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A84A35F75A69CA31A119AE14 /* DownloadManager.swift */; };
+		95EDD87867E832768835ECC3 /* SessionConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B427F8C73E31E7A61BBD654 /* SessionConfig.swift */; };
 		A3864A59C99333636920CAC6 /* PostDownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A08FD9F245A92055A533AE3 /* PostDownloadView.swift */; };
 		A8D8FA349D155D9AF240EFFB /* PostDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB391792038F82C52972C3AD /* PostDownloadManager.swift */; };
 		AC05F2B4F0E38F70A2CCDF65 /* SubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 163A30BDFDA31BF885AF419C /* SubscriptionView.swift */; };
 		AE4F7EF28225DDAFA6ADE041 /* LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6FA929FDA88D94C79A9D11 /* LibraryItem.swift */; };
+		B394601FDF626C54266939E1 /* SkipListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F074D9D52CFFD9BC760E31FD /* SkipListView.swift */; };
 		BABCE641D95D93327EB5AC51 /* PlaylistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A130CBE109569EE8D7D3177B /* PlaylistView.swift */; };
 		BAE7CBC7EFF8752F599110DE /* PostDownloadAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A84A02B1FFEF22D5E356BAE /* PostDownloadAction.swift */; };
 		BF1FC05213C2BE969AE1485F /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7E7A0E032F7AD2DA8622D5 /* SubscriptionManager.swift */; };
@@ -113,6 +119,7 @@
 		0FD44011FF11F14BC296A88B /* ytdlp-gui.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ytdlp-gui.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		163A30BDFDA31BF885AF419C /* SubscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionView.swift; sourceTree = "<group>"; };
 		1A7E7A0E032F7AD2DA8622D5 /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManager.swift; sourceTree = "<group>"; };
+		1CB114A47A0DB5783DD100EF /* CookieRefreshService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieRefreshService.swift; sourceTree = "<group>"; };
 		1D107B2F92360A51DBF7C20F /* StealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StealthManager.swift; sourceTree = "<group>"; };
 		1D8DE05A5048C8FFFA2530BA /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		25BB9B0FC6B405D9159AA4EC /* WidgetDataSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataSync.swift; sourceTree = "<group>"; };
@@ -124,11 +131,13 @@
 		363BC967F49F0D2D9814CF62 /* SpeedGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedGaugeView.swift; sourceTree = "<group>"; };
 		37D402D1122CEBE03E8CD6BF /* ChannelSubscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelSubscription.swift; sourceTree = "<group>"; };
 		3A08FD9F245A92055A533AE3 /* PostDownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostDownloadView.swift; sourceTree = "<group>"; };
+		3B427F8C73E31E7A61BBD654 /* SessionConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionConfig.swift; sourceTree = "<group>"; };
 		3BB068D17EF929B3474D83E9 /* ytdlp-gui Widget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "ytdlp-gui Widget.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3C0578F9697355E46BDA3A37 /* AudioWaveformService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioWaveformService.swift; sourceTree = "<group>"; };
 		3C2745F50D2204DDC7369AE4 /* LibraryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryDetailView.swift; sourceTree = "<group>"; };
 		3EA8A441E344E42B1382C0C3 /* SharedDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedDataManager.swift; sourceTree = "<group>"; };
 		4720604B38E53ED94281D540 /* DownloadPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadPreset.swift; sourceTree = "<group>"; };
+		4C19431B219AA350B34414FD /* SkipListManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkipListManager.swift; sourceTree = "<group>"; };
 		4FBC7BE628AE8AEE2E76B3D3 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		55CC760AA98B633EFABE1B5F /* ModernDesign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModernDesign.swift; sourceTree = "<group>"; };
 		59AC73A4FEA5A2459A408DFC /* SponsorBlockSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SponsorBlockSegment.swift; sourceTree = "<group>"; };
@@ -164,12 +173,15 @@
 		CE6FA929FDA88D94C79A9D11 /* LibraryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryItem.swift; sourceTree = "<group>"; };
 		D66968B2A28440AADB6EF8E9 /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
 		D7037FE80901A1AA1B61B913 /* HistoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryManager.swift; sourceTree = "<group>"; };
+		D898AEA5F1F18E62E366E8B2 /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
 		E001AB4F963161F38099A6B0 /* WidgetData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetData.swift; sourceTree = "<group>"; };
 		E3DE256DB81990882BBCDB3D /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		EDDDEAA5150B913D0DA5DF90 /* ScheduleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleManager.swift; sourceTree = "<group>"; };
 		EF4589E8D3FB169EEF1ADA17 /* QueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueView.swift; sourceTree = "<group>"; };
 		EF7C1C287E15D06EC4372EA0 /* YTDLPService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YTDLPService.swift; sourceTree = "<group>"; };
+		F074D9D52CFFD9BC760E31FD /* SkipListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkipListView.swift; sourceTree = "<group>"; };
 		F205C1943BEEEF69D2119624 /* StealthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StealthView.swift; sourceTree = "<group>"; };
+		F315B488432533BC080FE569 /* SkipListEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkipListEntry.swift; sourceTree = "<group>"; };
 		F403F6DD0BF7DEEC1C33544E /* CookieImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieImporter.swift; sourceTree = "<group>"; };
 		F5BFF8295A30368B23235523 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FA4856572B15006BC51EA23D /* ytdlp_guiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ytdlp_guiApp.swift; sourceTree = "<group>"; };
@@ -183,6 +195,7 @@
 				9DD1735B8C1DE1D99FDF6ADE /* BinaryManager.swift */,
 				2BDDDACD926BE04AB752F502 /* ClipboardMonitor.swift */,
 				F403F6DD0BF7DEEC1C33544E /* CookieImporter.swift */,
+				1CB114A47A0DB5783DD100EF /* CookieRefreshService.swift */,
 				D66968B2A28440AADB6EF8E9 /* DataStore.swift */,
 				A84A35F75A69CA31A119AE14 /* DownloadManager.swift */,
 				D7037FE80901A1AA1B61B913 /* HistoryManager.swift */,
@@ -190,6 +203,8 @@
 				B096BBBF71D7C39D04D94600 /* PlaylistService.swift */,
 				AB391792038F82C52972C3AD /* PostDownloadManager.swift */,
 				EDDDEAA5150B913D0DA5DF90 /* ScheduleManager.swift */,
+				D898AEA5F1F18E62E366E8B2 /* SessionManager.swift */,
+				4C19431B219AA350B34414FD /* SkipListManager.swift */,
 				CD1D900BDA946968DD3A6971 /* SpeedLimiter.swift */,
 				2E93D1F83258F3ADF019E3FF /* SponsorBlockService.swift */,
 				1D107B2F92360A51DBF7C20F /* StealthManager.swift */,
@@ -221,6 +236,8 @@
 				09909B4DF7EDB6422ACE4DAA /* OutputTemplate.swift */,
 				0A84A02B1FFEF22D5E356BAE /* PostDownloadAction.swift */,
 				0AC99E0E286345B4E82F0F7E /* ScheduleConfig.swift */,
+				3B427F8C73E31E7A61BBD654 /* SessionConfig.swift */,
+				F315B488432533BC080FE569 /* SkipListEntry.swift */,
 				59AC73A4FEA5A2459A408DFC /* SponsorBlockSegment.swift */,
 				A90B2DAA1553C9DAF57B21A9 /* StealthProfile.swift */,
 				61BA4628E688C8C38702550D /* YTDLPOptions.swift */,
@@ -285,6 +302,7 @@
 				EF4589E8D3FB169EEF1ADA17 /* QueueView.swift */,
 				5DAF6A89C4CA105895E96A6D /* ScheduleView.swift */,
 				1D8DE05A5048C8FFFA2530BA /* SettingsView.swift */,
+				F074D9D52CFFD9BC760E31FD /* SkipListView.swift */,
 				8E928038429F28C8D155DE65 /* SpeedLimitView.swift */,
 				0CFE3549CC51FE5C819C37D7 /* SponsorBlockEditorView.swift */,
 				F205C1943BEEEF69D2119624 /* StealthView.swift */,
@@ -483,6 +501,7 @@
 				8E99B786FBDCAF25B3F0C27F /* ClipboardMonitorView.swift in Sources */,
 				19C40139A5BBE2347A849790 /* ContentView.swift in Sources */,
 				8549FDB72B14574213591242 /* CookieImporter.swift in Sources */,
+				176DDA2963DE569C6ED4F64F /* CookieRefreshService.swift in Sources */,
 				F2F7411A1738720F95E372E3 /* DashboardView.swift in Sources */,
 				87B00936C2B94D56BCE1123A /* DataStore.swift in Sources */,
 				C39CD7B96996B4F14D75B952 /* DownloadItem.swift in Sources */,
@@ -512,7 +531,12 @@
 				BF42F08E385BC3334A8B2AC5 /* ScheduleConfig.swift in Sources */,
 				81DFCD76BE8E37A47A6D6D78 /* ScheduleManager.swift in Sources */,
 				497F2B41C89128AE2C3740DC /* ScheduleView.swift in Sources */,
+				95EDD87867E832768835ECC3 /* SessionConfig.swift in Sources */,
+				68826E44F622AA8E36C0F617 /* SessionManager.swift in Sources */,
 				409E978097DA439C18D25718 /* SettingsView.swift in Sources */,
+				5760A1CE37D45C28D9DFC016 /* SkipListEntry.swift in Sources */,
+				3E7194F4377B6F689CEA7FD8 /* SkipListManager.swift in Sources */,
+				B394601FDF626C54266939E1 /* SkipListView.swift in Sources */,
 				007D48B4713E3BCCB570EE1B /* SpeedGaugeView.swift in Sources */,
 				1C229598B088343421DC0F69 /* SpeedLimitView.swift in Sources */,
 				F934F091A17166C2A692F80D /* SpeedLimiter.swift in Sources */,

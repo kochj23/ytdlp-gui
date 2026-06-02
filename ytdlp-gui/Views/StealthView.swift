@@ -14,6 +14,10 @@ import UniformTypeIdentifiers
 struct StealthView: View {
     @EnvironmentObject var dataStore: DataStore
     @ObservedObject var stealthManager = StealthManager.shared
+    @ObservedObject var sessionManager = SessionManager.shared
+    @ObservedObject var cookieRefresh = CookieRefreshService.shared
+    @ObservedObject var skipListManager = SkipListManager.shared
+    @State private var showingSkipList = false
 
     var body: some View {
         ScrollView {
@@ -391,9 +395,416 @@ struct StealthView: View {
                         .glassCard()
                     }
                 }
+
+                // ═══════════════════════════════════════════════════════════════
+                // NOVA SESSION MANAGEMENT
+                // ═══════════════════════════════════════════════════════════════
+
+                Divider()
+                    .padding(.vertical, 8)
+
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Nova Session Intelligence")
+                            .modernHeader(size: .medium)
+                        Text("Battle-tested download orchestration from 677+ channel automation")
+                            .font(.system(size: 12, design: .rounded))
+                            .foregroundColor(ModernColors.textSecondary)
+                    }
+                    Spacer()
+                    // Session state badge
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(sessionStateColor)
+                            .frame(width: 8, height: 8)
+                        Text(sessionManager.sessionState.rawValue)
+                            .font(.system(size: 11, weight: .medium, design: .monospaced))
+                            .foregroundColor(ModernColors.textSecondary)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(sessionStateColor.opacity(0.1))
+                    .cornerRadius(12)
+                }
+
+                HStack(alignment: .top, spacing: 24) {
+                    // Left column: Session Control + Cookie Refresh
+                    VStack(spacing: 20) {
+                        // Session Control
+                        sessionControlCard
+
+                        // Cookie Auto-Refresh
+                        cookieRefreshCard
+                    }
+
+                    // Right column: Download Pacing + Skip List
+                    VStack(spacing: 20) {
+                        // Download Pacing (Realistic Delays + Batching)
+                        downloadPacingCard
+
+                        // Skip List
+                        skipListCard
+                    }
+                }
             }
             .padding(32)
         }
+        .sheet(isPresented: $showingSkipList) {
+            SkipListView()
+        }
+    }
+
+    // MARK: - Session State Color
+
+    private var sessionStateColor: Color {
+        switch sessionManager.sessionState {
+        case .active: return ModernColors.accentGreen
+        case .paused: return ModernColors.red
+        case .waitingBatch: return ModernColors.orange
+        case .waitingZeroBatch: return ModernColors.yellow
+        }
+    }
+
+    // MARK: - Session Control Card
+
+    private var sessionControlCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "brain.head.profile")
+                    .foregroundColor(ModernColors.purple)
+                Text("Session Control")
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundColor(ModernColors.textPrimary)
+                Spacer()
+                Toggle("", isOn: $dataStore.sessionConfig.blockDetectionEnabled)
+                    .toggleStyle(.switch)
+                    .onChange(of: dataStore.sessionConfig.blockDetectionEnabled) { _ in
+                        dataStore.saveSessionConfig()
+                    }
+            }
+
+            // Session stats
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Hard Blocks")
+                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .foregroundColor(ModernColors.textTertiary)
+                    Text("\(sessionManager.consecutiveHardBlocks)")
+                        .font(.system(size: 18, weight: .bold, design: .monospaced))
+                        .foregroundColor(sessionManager.consecutiveHardBlocks > 0 ? ModernColors.red : ModernColors.textSecondary)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Rate Limits")
+                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .foregroundColor(ModernColors.textTertiary)
+                    Text("\(sessionManager.consecutiveRateLimits)")
+                        .font(.system(size: 18, weight: .bold, design: .monospaced))
+                        .foregroundColor(sessionManager.consecutiveRateLimits > 0 ? ModernColors.orange : ModernColors.textSecondary)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Batch")
+                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .foregroundColor(ModernColors.textTertiary)
+                    Text("\(sessionManager.downloadsInCurrentBatch)/\(sessionManager.currentBatchSize)")
+                        .font(.system(size: 18, weight: .bold, design: .monospaced))
+                        .foregroundColor(ModernColors.textSecondary)
+                }
+                Spacer()
+            }
+
+            // Max consecutive before halt
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Halt after consecutive blocks:")
+                        .font(.system(size: 12, design: .rounded))
+                        .foregroundColor(ModernColors.textSecondary)
+                    Stepper("\(dataStore.sessionConfig.maxConsecutiveHardBlocks)", value: $dataStore.sessionConfig.maxConsecutiveHardBlocks, in: 1...10)
+                        .onChange(of: dataStore.sessionConfig.maxConsecutiveHardBlocks) { _ in
+                            dataStore.saveSessionConfig()
+                        }
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Pause duration (hours):")
+                        .font(.system(size: 12, design: .rounded))
+                        .foregroundColor(ModernColors.textSecondary)
+                    Stepper("\(Int(dataStore.sessionConfig.hardBlockPauseDurationHours))h", value: $dataStore.sessionConfig.hardBlockPauseDurationHours, in: 1...48)
+                        .onChange(of: dataStore.sessionConfig.hardBlockPauseDurationHours) { _ in
+                            dataStore.saveSessionConfig()
+                        }
+                }
+            }
+
+            // Resume button when paused
+            if sessionManager.sessionState == .paused {
+                HStack {
+                    if let until = sessionManager.sessionPausedUntil {
+                        Text("Paused until \(until, style: .relative)")
+                            .font(.system(size: 11, design: .rounded))
+                            .foregroundColor(ModernColors.red)
+                    }
+                    Spacer()
+                    Button("Resume Session") {
+                        sessionManager.resumeSession()
+                        DownloadManager.shared.processQueue()
+                    }
+                    .buttonStyle(ModernButtonStyle(color: ModernColors.accentGreen, style: .filled))
+                }
+            }
+        }
+        .glassCard()
+    }
+
+    // MARK: - Cookie Refresh Card
+
+    private var cookieRefreshCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .foregroundColor(ModernColors.teal)
+                Text("Cookie Auto-Refresh")
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundColor(ModernColors.textPrimary)
+                Spacer()
+                Toggle("", isOn: $dataStore.sessionConfig.cookieAutoRefreshEnabled)
+                    .toggleStyle(.switch)
+                    .onChange(of: dataStore.sessionConfig.cookieAutoRefreshEnabled) { newValue in
+                        dataStore.saveSessionConfig()
+                        if newValue {
+                            CookieRefreshService.shared.startPeriodicCheck()
+                        } else {
+                            CookieRefreshService.shared.stopPeriodicCheck()
+                        }
+                    }
+            }
+
+            // Cookie age display
+            HStack {
+                if let age = cookieRefresh.cookieAgeFormatted {
+                    Text("Cookie file: \(age)")
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundColor(cookieRefresh.cookiesAreStale() ? ModernColors.orange : ModernColors.accentGreen)
+                } else {
+                    Text("No cookie file found")
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundColor(ModernColors.textTertiary)
+                }
+                Spacer()
+                if cookieRefresh.isRefreshing {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                }
+            }
+
+            // TTL picker
+            HStack {
+                Text("Refresh when older than:")
+                    .font(.system(size: 12, design: .rounded))
+                    .foregroundColor(ModernColors.textSecondary)
+                Spacer()
+                Picker("", selection: $dataStore.sessionConfig.cookieTTLSeconds) {
+                    Text("1h").tag(TimeInterval(3600))
+                    Text("3h").tag(TimeInterval(10800))
+                    Text("6h").tag(TimeInterval(21600))
+                    Text("12h").tag(TimeInterval(43200))
+                    Text("24h").tag(TimeInterval(86400))
+                }
+                .frame(width: 180)
+                .onChange(of: dataStore.sessionConfig.cookieTTLSeconds) { _ in
+                    dataStore.saveSessionConfig()
+                }
+            }
+
+            // Browser source for refresh
+            HStack {
+                Text("Refresh from:")
+                    .font(.system(size: 12, design: .rounded))
+                    .foregroundColor(ModernColors.textSecondary)
+                Spacer()
+                Picker("", selection: $dataStore.sessionConfig.cookieRefreshBrowser) {
+                    ForEach(CookieSource.allCases.filter { $0 != .none && $0 != .file }) { source in
+                        Text(source.rawValue).tag(source)
+                    }
+                }
+                .frame(width: 140)
+                .onChange(of: dataStore.sessionConfig.cookieRefreshBrowser) { _ in
+                    dataStore.saveSessionConfig()
+                }
+            }
+
+            // Status + manual refresh
+            HStack {
+                if let status = cookieRefresh.lastRefreshStatus {
+                    Text(status)
+                        .font(.system(size: 10, design: .rounded))
+                        .foregroundColor(ModernColors.textTertiary)
+                        .lineLimit(1)
+                }
+                Spacer()
+                Button("Refresh Now") {
+                    Task { _ = await CookieRefreshService.shared.refreshCookies() }
+                }
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(ModernColors.teal)
+                .disabled(cookieRefresh.isRefreshing)
+            }
+        }
+        .glassCard()
+    }
+
+    // MARK: - Download Pacing Card
+
+    private var downloadPacingCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "metronome")
+                    .foregroundColor(ModernColors.cyan)
+                Text("Download Pacing")
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundColor(ModernColors.textPrimary)
+                Spacer()
+                Toggle("", isOn: $dataStore.sessionConfig.realisticDelaysEnabled)
+                    .toggleStyle(.switch)
+                    .onChange(of: dataStore.sessionConfig.realisticDelaysEnabled) { _ in
+                        dataStore.saveSessionConfig()
+                    }
+            }
+
+            Text("Nova-style organic timing: longer randomized delays that mimic human browsing")
+                .font(.system(size: 11, design: .rounded))
+                .foregroundColor(ModernColors.textTertiary)
+
+            // Inter-download delay
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Between downloads: \(Int(dataStore.sessionConfig.interDownloadMinDelay))–\(Int(dataStore.sessionConfig.interDownloadMaxDelay))s")
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundColor(ModernColors.textSecondary)
+                HStack(spacing: 8) {
+                    Slider(value: $dataStore.sessionConfig.interDownloadMinDelay, in: 1...30, step: 1)
+                        .onChange(of: dataStore.sessionConfig.interDownloadMinDelay) { _ in dataStore.saveSessionConfig() }
+                    Slider(value: $dataStore.sessionConfig.interDownloadMaxDelay, in: 10...120, step: 5)
+                        .onChange(of: dataStore.sessionConfig.interDownloadMaxDelay) { _ in dataStore.saveSessionConfig() }
+                }
+            }
+
+            // Inter-batch delay
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Between batches: \(Int(dataStore.sessionConfig.interBatchMinDelay))–\(Int(dataStore.sessionConfig.interBatchMaxDelay))s")
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundColor(ModernColors.textSecondary)
+                HStack(spacing: 8) {
+                    Slider(value: $dataStore.sessionConfig.interBatchMinDelay, in: 10...120, step: 5)
+                        .onChange(of: dataStore.sessionConfig.interBatchMinDelay) { _ in dataStore.saveSessionConfig() }
+                    Slider(value: $dataStore.sessionConfig.interBatchMaxDelay, in: 30...300, step: 10)
+                        .onChange(of: dataStore.sessionConfig.interBatchMaxDelay) { _ in dataStore.saveSessionConfig() }
+                }
+            }
+
+            Divider()
+
+            // Batch Sizing
+            HStack {
+                Image(systemName: "square.stack.3d.up")
+                    .foregroundColor(ModernColors.orange)
+                    .font(.system(size: 13))
+                Text("Batch Sizing")
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundColor(ModernColors.textPrimary)
+                Spacer()
+                Toggle("", isOn: $dataStore.sessionConfig.batchingEnabled)
+                    .toggleStyle(.switch)
+                    .onChange(of: dataStore.sessionConfig.batchingEnabled) { _ in
+                        dataStore.saveSessionConfig()
+                    }
+            }
+
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Min batch")
+                        .font(.system(size: 11, design: .rounded))
+                        .foregroundColor(ModernColors.textTertiary)
+                    Stepper("\(dataStore.sessionConfig.minBatchSize)", value: $dataStore.sessionConfig.minBatchSize, in: 0...10)
+                        .onChange(of: dataStore.sessionConfig.minBatchSize) { _ in dataStore.saveSessionConfig() }
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Max batch")
+                        .font(.system(size: 11, design: .rounded))
+                        .foregroundColor(ModernColors.textTertiary)
+                    Stepper("\(dataStore.sessionConfig.maxBatchSize)", value: $dataStore.sessionConfig.maxBatchSize, in: 1...20)
+                        .onChange(of: dataStore.sessionConfig.maxBatchSize) { _ in dataStore.saveSessionConfig() }
+                }
+            }
+
+            if dataStore.sessionConfig.minBatchSize == 0 {
+                HStack(spacing: 4) {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 10))
+                        .foregroundColor(ModernColors.yellow)
+                    Text("Min=0 enables zero-batches: deliberate idle periods that mimic real browsing")
+                        .font(.system(size: 10, design: .rounded))
+                        .foregroundColor(ModernColors.yellow)
+                }
+            }
+        }
+        .glassCard()
+    }
+
+    // MARK: - Skip List Card
+
+    private var skipListCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "list.bullet.rectangle")
+                    .foregroundColor(ModernColors.pink)
+                Text("Skip List")
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundColor(ModernColors.textPrimary)
+                Spacer()
+                Toggle("", isOn: $dataStore.sessionConfig.skipListEnabled)
+                    .toggleStyle(.switch)
+                    .onChange(of: dataStore.sessionConfig.skipListEnabled) { _ in
+                        dataStore.saveSessionConfig()
+                    }
+            }
+
+            Text("URLs permanently skipped due to members-only, geo-restriction, or repeated failures")
+                .font(.system(size: 11, design: .rounded))
+                .foregroundColor(ModernColors.textTertiary)
+
+            HStack {
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 12))
+                        .foregroundColor(ModernColors.orange)
+                    Text("\(skipListManager.count) URLs skipped")
+                        .font(.system(size: 13, weight: .medium, design: .monospaced))
+                        .foregroundColor(ModernColors.textSecondary)
+                }
+                Spacer()
+                Button("Manage Skip List") {
+                    showingSkipList = true
+                }
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(ModernColors.pink)
+            }
+
+            // Reason breakdown (compact)
+            if !skipListManager.entries.isEmpty {
+                let reasons = Dictionary(grouping: skipListManager.entries, by: \.reason)
+                HStack(spacing: 8) {
+                    ForEach(reasons.sorted(by: { $0.value.count > $1.value.count }).prefix(4), id: \.key) { reason, entries in
+                        HStack(spacing: 2) {
+                            Image(systemName: reason.icon)
+                                .font(.system(size: 9))
+                            Text("\(entries.count)")
+                                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        }
+                        .foregroundColor(ModernColors.textTertiary)
+                    }
+                    Spacer()
+                }
+            }
+        }
+        .glassCard()
     }
 
     // MARK: - Helpers

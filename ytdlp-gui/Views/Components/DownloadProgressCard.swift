@@ -173,6 +173,7 @@ struct DownloadProgressCard: View {
         case .cancelled: return ModernColors.textTertiary
         case .paused: return ModernColors.orange
         case .retrying: return ModernColors.yellow
+        case .skipped: return ModernColors.textTertiary
         }
     }
 

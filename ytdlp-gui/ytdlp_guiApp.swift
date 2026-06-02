@@ -120,6 +120,13 @@ struct ytdlp_guiApp: App {
         // Start scheduler and subscription monitor
         scheduleManager.startScheduler()
         subscriptionManager.startMonitoring()
+
+        // Initialize Nova session services
+        SkipListManager.shared.loadSkipList()
+        _ = SessionManager.shared
+        if dataStore.sessionConfig.cookieAutoRefreshEnabled {
+            CookieRefreshService.shared.startPeriodicCheck()
+        }
     }
 
     // MARK: - URL Scheme Handler (ytdlp-gui://download?url=...)

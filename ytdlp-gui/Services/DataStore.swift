@@ -18,6 +18,7 @@ class DataStore: ObservableObject {
     @Published var presets: [DownloadPreset] = []
     @Published var settings: AppSettings = AppSettings()
     @Published var stealthProfile: StealthProfile = StealthProfile()
+    @Published var sessionConfig: SessionConfig = SessionConfig()
     @Published var isLoading: Bool = false
 
     private let logger = Logger(subsystem: "com.jordankoch.ytdlp-gui", category: "DataStore")
@@ -46,6 +47,7 @@ class DataStore: ObservableObject {
     private var presetsFile: URL { dataDirectory.appendingPathComponent("presets.json") }
     private var settingsFile: URL { dataDirectory.appendingPathComponent("settings.json") }
     private var stealthFile: URL { dataDirectory.appendingPathComponent("stealth.json") }
+    private var sessionConfigFile: URL { dataDirectory.appendingPathComponent("session_config.json") }
 
     init() {
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -62,6 +64,7 @@ class DataStore: ObservableObject {
         library = loadJSON(from: libraryFile) ?? []
         settings = loadJSON(from: settingsFile) ?? AppSettings()
         stealthProfile = loadJSON(from: stealthFile) ?? StealthProfile()
+        sessionConfig = loadJSON(from: sessionConfigFile) ?? SessionConfig()
 
         // Load presets, merging with built-ins
         let savedPresets: [DownloadPreset] = loadJSON(from: presetsFile) ?? []
@@ -139,6 +142,10 @@ class DataStore: ObservableObject {
 
     func saveStealthProfile() {
         saveJSON(stealthProfile, to: stealthFile)
+    }
+
+    func saveSessionConfig() {
+        saveJSON(sessionConfig, to: sessionConfigFile)
     }
 
     // MARK: - JSON Helpers

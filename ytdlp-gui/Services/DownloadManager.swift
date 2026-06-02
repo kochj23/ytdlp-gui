@@ -67,14 +67,68 @@ class DownloadManager: ObservableObject {
     // MARK: - Queue Processing
 
     func processQueue() {
+        // Session-level pause check
+        if SessionManager.shared.isSessionPaused { return }
+
         let settings = DataStore.shared.settings
         let active = queue.filter { $0.status.isActive }.count
         let available = settings.maxConcurrentDownloads - active
         guard available > 0 else { return }
 
+        // Skip-list filtering: mark skip-listed items before processing
+        let sessionConfig = DataStore.shared.sessionConfig
+        if sessionConfig.skipListEnabled {
+            for i in queue.indices where queue[i].status == .queued {
+                if SkipListManager.shared.isSkipped(queue[i].url) {
+                    queue[i].status = .skipped
+                    queue[i].errorMessage = SkipListManager.shared.reason(for: queue[i].url)?.rawValue
+                }
+            }
+        }
+
+        // Batch gating: if batch limit reached, don't start more until batch resets
+        if sessionConfig.batchingEnabled && SessionManager.shared.shouldStartNewBatch() {
+            SessionManager.shared.completeBatch()
+            Task {
+                let batchDelay = SessionManager.shared.nextInterBatchDelay()
+                logger.info("Inter-batch delay: \(String(format: "%.1f", batchDelay))s")
+                try? await Task.sleep(nanoseconds: UInt64(batchDelay * 1_000_000_000))
+                await MainActor.run {
+                    let newSize = SessionManager.shared.generateBatchSize()
+                    if newSize > 0 {
+                        self.processQueue()
+                    } else {
+                        // Zero-batch: wait again then generate a new batch
+                        Task {
+                            let zeroDelay = SessionManager.shared.nextInterBatchDelay()
+                            self.logger.info("Zero-batch idle: \(String(format: "%.1f", zeroDelay))s")
+                            try? await Task.sleep(nanoseconds: UInt64(zeroDelay * 1_000_000_000))
+                            await MainActor.run {
+                                _ = SessionManager.shared.generateBatchSize()
+                                self.processQueue()
+                            }
+                        }
+                    }
+                }
+            }
+            return
+        }
+
         let pending = queue.filter { $0.status == .queued }
         for item in pending.prefix(available) {
             startDownload(item.id)
+        }
+    }
+
+    func processQueueWithCookieCheck() {
+        let sessionConfig = DataStore.shared.sessionConfig
+        if sessionConfig.cookieAutoRefreshEnabled {
+            Task {
+                _ = await CookieRefreshService.shared.ensureFreshCookies()
+                await MainActor.run { self.processQueue() }
+            }
+        } else {
+            processQueue()
         }
     }
 
@@ -155,11 +209,18 @@ class DownloadManager: ObservableObject {
             options.limitRate = rateLimit
         }
 
+        let sessionConfig = DataStore.shared.sessionConfig
         let task = Task {
-            // Apply random delay if stealth enabled
-            if stealth.isEnabled && stealth.randomDelayEnabled {
-                let delay = StealthManager.shared.randomDelay()
+            // Apply delay: use Nova-style realistic delays if enabled, otherwise standard stealth delay
+            let delay = SessionManager.shared.nextInterDownloadDelay()
+            if delay > 0 {
                 try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            }
+
+            // Channel-switch delay (additional pause when switching between channels)
+            let channelDelay = SessionManager.shared.channelSwitchDelay(for: item.url)
+            if channelDelay > 0 {
+                try? await Task.sleep(nanoseconds: UInt64(channelDelay * 1_000_000_000))
             }
 
             do {
@@ -172,6 +233,9 @@ class DownloadManager: ObservableObject {
                         self.queue[idx].outputPath = result.outputPath
                         self.queue[idx].progress.percentage = 100
                         self.totalCompleted += 1
+
+                        // Report success to session manager (resets consecutive failure counters)
+                        SessionManager.shared.reportSuccess()
 
                         // Add to library
                         let fileSize = self.getFileSize(path: result.outputPath)
@@ -192,15 +256,40 @@ class DownloadManager: ObservableObject {
             } catch let error as YTDLPError {
                 await MainActor.run {
                     if let idx = self.queue.firstIndex(where: { $0.id == id }) {
-                        let isRetryable = (error == .rateLimited || error == .forbidden)
+                        // Handle soft blocks: skip and add to skip list
+                        if case .softBlocked = error {
+                            let action = SessionManager.shared.reportSoftError(url: item.url, reason: error.skipReason ?? .unavailable)
+                            self.queue[idx].status = .skipped
+                            self.queue[idx].errorMessage = error.localizedDescription
+                            self.cleanupDownload(id)
+                            self.processQueue()
+                            return
+                        }
+
+                        // Handle hard blocks: report to session manager
+                        let isRetryable = error.isHardBlock
+                        if isRetryable {
+                            let action = SessionManager.shared.reportHardBlock(url: item.url, error: error)
+                            switch action {
+                            case .pauseSession, .haltSession:
+                                self.queue[idx].status = .failed
+                                self.queue[idx].errorMessage = error.localizedDescription
+                                self.totalFailed += 1
+                                self.cleanupDownload(id)
+                                self.pauseAll()
+                                return
+                            default:
+                                break
+                            }
+                        }
+
+                        // Standard retry logic (unchanged)
                         if isRetryable && stealth.retryOn429 && self.queue[idx].retryCount < stealth.maxRetries {
-                            // Auto-retry with identity rotation for both 429 and 403
                             self.queue[idx].retryCount += 1
                             self.queue[idx].status = .retrying
                             let errorCode = error == .rateLimited ? "429" : "403"
                             self.logger.info("HTTP \(errorCode), rotating identity and retrying (\(self.queue[idx].retryCount)/\(stealth.maxRetries))")
 
-                            // Rotate identity before retry
                             StealthManager.shared.rotateIdentity()
 
                             Task {
@@ -346,15 +435,3 @@ class DownloadManager: ObservableObject {
     }
 }
 
-// MARK: - Equatable for YTDLPError
-extension YTDLPError: Equatable {
-    static func == (lhs: YTDLPError, rhs: YTDLPError) -> Bool {
-        switch (lhs, rhs) {
-        case (.rateLimited, .rateLimited): return true
-        case (.forbidden, .forbidden): return true
-        case (.cancelled, .cancelled): return true
-        case (.binaryNotFound, .binaryNotFound): return true
-        default: return false
-        }
-    }
-}

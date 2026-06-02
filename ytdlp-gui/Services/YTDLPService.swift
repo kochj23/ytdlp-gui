@@ -275,9 +275,21 @@ class YTDLPService: ObservableObject {
                     )
                     continuation.resume(returning: result)
                 } else {
-                    // Check for specific error types
+                    // Check for specific error types (soft blocks before hard blocks)
                     let combinedOutput = errorOutput + fullOutput
-                    if combinedOutput.contains("HTTP Error 429") || combinedOutput.contains("429 Too Many Requests") {
+                    let combinedLower = combinedOutput.lowercased()
+
+                    // Soft blocks: skip-worthy but don't affect session health
+                    if combinedLower.contains("members only") || combinedLower.contains("join this channel to get access") {
+                        continuation.resume(throwing: YTDLPError.softBlocked("Members only content"))
+                    } else if combinedLower.contains("not available in your country") || combinedLower.contains("geo") && combinedLower.contains("restricted") {
+                        continuation.resume(throwing: YTDLPError.softBlocked("Geo-restricted"))
+                    } else if combinedLower.contains("age-restricted") || combinedLower.contains("sign in to confirm your age") {
+                        continuation.resume(throwing: YTDLPError.softBlocked("Age-restricted"))
+                    } else if combinedLower.contains("private video") || combinedLower.contains("this live event has ended") {
+                        continuation.resume(throwing: YTDLPError.softBlocked("Video unavailable"))
+                    // Hard blocks: affect session health
+                    } else if combinedOutput.contains("HTTP Error 429") || combinedOutput.contains("429 Too Many Requests") {
                         continuation.resume(throwing: YTDLPError.rateLimited)
                     } else if combinedOutput.contains("HTTP Error 403")
                                 || combinedOutput.contains("403 Forbidden")
@@ -476,12 +488,13 @@ struct DownloadResult {
     var errorOutput: String?
 }
 
-enum YTDLPError: LocalizedError {
+enum YTDLPError: LocalizedError, Equatable {
     case downloadFailed(String)
     case executionFailed(Error)
     case parseError(String)
     case rateLimited
     case forbidden
+    case softBlocked(String)
     case cancelled
     case binaryNotFound
 
@@ -492,8 +505,41 @@ enum YTDLPError: LocalizedError {
         case .parseError(let msg): return "Parse error: \(msg)"
         case .rateLimited: return "Rate limited (HTTP 429). Try enabling stealth mode."
         case .forbidden: return "Access forbidden (HTTP 403). Try using cookies or different identity."
+        case .softBlocked(let reason): return "Skipped: \(reason)"
         case .cancelled: return "Download was cancelled"
         case .binaryNotFound: return "yt-dlp binary not found"
+        }
+    }
+
+    var isHardBlock: Bool {
+        switch self {
+        case .rateLimited, .forbidden: return true
+        default: return false
+        }
+    }
+
+    var skipReason: SkipReason? {
+        switch self {
+        case .softBlocked(let reason):
+            if reason.contains("members") || reason.contains("Join this channel") { return .membersOnly }
+            if reason.contains("country") || reason.contains("geo") { return .geoRestricted }
+            if reason.contains("age") { return .ageRestricted }
+            return .unavailable
+        default: return nil
+        }
+    }
+
+    static func == (lhs: YTDLPError, rhs: YTDLPError) -> Bool {
+        switch (lhs, rhs) {
+        case (.rateLimited, .rateLimited): return true
+        case (.forbidden, .forbidden): return true
+        case (.cancelled, .cancelled): return true
+        case (.binaryNotFound, .binaryNotFound): return true
+        case (.downloadFailed(let a), .downloadFailed(let b)): return a == b
+        case (.parseError(let a), .parseError(let b)): return a == b
+        case (.softBlocked(let a), .softBlocked(let b)): return a == b
+        case (.executionFailed, .executionFailed): return true
+        default: return false
         }
     }
 }

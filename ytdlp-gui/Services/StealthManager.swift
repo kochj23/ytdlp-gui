@@ -87,6 +87,23 @@ class StealthManager: ObservableObject {
         logger.info("Identity rotated")
     }
 
+    // MARK: - Nova-Style Realistic Delays
+
+    func realisticInterDownloadDelay() -> Double {
+        let config = DataStore.shared.sessionConfig
+        return Double.random(in: config.interDownloadMinDelay...config.interDownloadMaxDelay)
+    }
+
+    func realisticInterBatchDelay() -> Double {
+        let config = DataStore.shared.sessionConfig
+        return Double.random(in: config.interBatchMinDelay...config.interBatchMaxDelay)
+    }
+
+    func channelSwitchDelay() -> Double {
+        let config = DataStore.shared.sessionConfig
+        return Double.random(in: config.channelSwitchMinDelay...config.channelSwitchMaxDelay)
+    }
+
     // MARK: - User Agent Loading
 
     private func loadUserAgents() {

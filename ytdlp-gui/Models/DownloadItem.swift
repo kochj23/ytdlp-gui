@@ -55,6 +55,7 @@ enum DownloadStatus: String, Codable, CaseIterable {
     case cancelled = "Cancelled"
     case paused = "Paused"
     case retrying = "Retrying"
+    case skipped = "Skipped"
 
     var isActive: Bool {
         switch self {
@@ -67,7 +68,7 @@ enum DownloadStatus: String, Codable, CaseIterable {
 
     var isTerminal: Bool {
         switch self {
-        case .completed, .failed, .cancelled:
+        case .completed, .failed, .cancelled, .skipped:
             return true
         default:
             return false
