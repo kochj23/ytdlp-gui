@@ -252,4 +252,12 @@ See [LICENSE](LICENSE) for the full text.
 
 ---
 
+## Related Projects
+
+- [Nova](https://github.com/kochj23/nova) — The AI familiar that powers the session intelligence engine
+- [Nova's Journal](https://nova.digitalnoise.net) — Daily essays, security briefings, and creative writing from Nova
+- [Live System Dashboard](https://gauges.digitalnoise.net/gauges) — Real-time 3D gauge cluster monitoring Nova's infrastructure
+
+---
+
 Written by Jordan Koch
