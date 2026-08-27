@@ -37,15 +37,51 @@ class YTDLPService: ObservableObject {
         // Set ffmpeg location
         args += ["--ffmpeg-location", URL(fileURLWithPath: ffmpegPath).deletingLastPathComponent().path]
 
-        // Inject password from Keychain if provided
+        // Inject password from Keychain if provided.  The secret is written to
+        // a temporary 0600 yt-dlp config file and passed via --config-locations
+        // rather than on the argv, so it never appears in `ps` output.
+        var passwordConfigURL: URL?
         if let pwd = password {
-            args += ["--password", pwd]
+            let configURL = try Self.writeSecurePasswordConfig(password: pwd)
+            passwordConfigURL = configURL
+            args += ["--config-locations", configURL.path]
+        }
+        defer {
+            if let configURL = passwordConfigURL {
+                try? FileManager.default.removeItem(at: configURL)
+            }
         }
 
         // Add the URL last
         args.append(url)
 
         return try await executeProcess(binaryPath: binaryPath, arguments: args)
+    }
+
+    /// Writes a yt-dlp config file containing the site password with 0600
+    /// permissions.  Passing the secret via --config-locations keeps it out of
+    /// the process argument list, which is world-readable via `ps`.  The file
+    /// is created with restrictive permissions from the start (no 0644 window)
+    /// and is deleted by the caller once the download process exits.
+    private static func writeSecurePasswordConfig(password: String) throws -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ytdlp-\(UUID().uuidString).conf")
+        // Single-quote the value and escape any embedded single quotes so
+        // yt-dlp's shlex-based config parser reads the password verbatim.
+        let escaped = password.replacingOccurrences(of: "'", with: "'\\''")
+        let data = Data("--password '\(escaped)'\n".utf8)
+        guard FileManager.default.createFile(
+            atPath: url.path,
+            contents: data,
+            attributes: [.posixPermissions: 0o600]
+        ) else {
+            throw YTDLPError.executionFailed(NSError(
+                domain: "YTDLPService",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Failed to write secure password config"]
+            ))
+        }
+        return url
     }
 
     // MARK: - Fetch Metadata
